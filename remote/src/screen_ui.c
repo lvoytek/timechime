@@ -59,8 +59,20 @@ void timechime_screen_ui_clear()
 }
 
 void timechime_screen_wait()
+static bool screen_refresh_done;
+
+static void on_refr_finish(lv_event_t *e)
 {
-	while (1) {
+	screen_refresh_done = true;
+}
+
+void timechime_screen_wait(void)
+{
+	screen_refresh_done = false;
+	lv_display_add_event_cb(lv_display_get_default(), on_refr_finish, LV_EVENT_FLUSH_FINISH,
+				NULL);
+
+	while (!screen_refresh_done) {
 		lv_timer_handler();
 		k_sleep(K_MSEC(10));
 	}
