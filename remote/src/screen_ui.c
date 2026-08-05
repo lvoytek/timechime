@@ -30,6 +30,31 @@ void timechime_screen_ui_clear()
 	lv_obj_set_style_bg_color(lv_screen_active(), lv_color_white(), 0);
 	lv_obj_set_style_bg_opa(lv_screen_active(), LV_OPA_COVER, 0);
 
+	lv_obj_t *base_layer = lv_screen_active();
+
+	lv_coord_t screen_w = lv_display_get_horizontal_resolution(NULL);
+	lv_coord_t screen_h = lv_display_get_vertical_resolution(NULL);
+
+	// Horizontal line 3/4 of the way down
+	lv_obj_t *h_line = lv_obj_create(base_layer);
+	lv_obj_set_style_bg_color(h_line, lv_color_black(), 0);
+	lv_obj_set_style_bg_opa(h_line, LV_OPA_COVER, 0);
+	lv_obj_set_style_border_width(h_line, 0, 0);
+	lv_obj_set_size(h_line, screen_w, 2);
+	lv_obj_set_pos(h_line, 0, screen_h * 3 / 4);
+
+	// Three vertical lines 1/4 apart, connecting horizontal line to bottom
+	lv_coord_t v_line_top = screen_h * 3 / 4;
+	lv_coord_t v_line_height = screen_h - v_line_top;
+	for (int i = 1; i <= 3; i++) {
+		lv_obj_t *v_line = lv_obj_create(base_layer);
+		lv_obj_set_style_bg_color(v_line, lv_color_black(), 0);
+		lv_obj_set_style_bg_opa(v_line, LV_OPA_COVER, 0);
+		lv_obj_set_style_border_width(v_line, 0, 0);
+		lv_obj_set_size(v_line, 2, v_line_height);
+		lv_obj_set_pos(v_line, screen_w * i / 4, v_line_top);
+	}
+
 	timechime_screen_wait();
 }
 
