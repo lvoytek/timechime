@@ -58,7 +58,28 @@ void timechime_screen_ui_clear()
 	timechime_screen_wait();
 }
 
-void timechime_screen_wait()
+void timechime_screen_draw_button_indicator(int button, timechime_sprite_t sprite)
+{
+	if (button < 0 || button >= 4 || (unsigned int)sprite >= NUM_TIMECHIME_SPRITES) {
+		return;
+	}
+
+	lv_coord_t screen_w = lv_display_get_horizontal_resolution(NULL);
+	lv_coord_t screen_h = lv_display_get_vertical_resolution(NULL);
+	lv_coord_t section_w = screen_w / 4;
+	lv_coord_t section_h = screen_h / 4;
+
+	int32_t img_w = sprites[sprite]->header.w;
+	int32_t img_h = sprites[sprite]->header.h;
+
+	lv_obj_t *img = lv_image_create(lv_screen_active());
+	lv_image_set_src(img, sprites[sprite]);
+	lv_obj_set_pos(img, button * section_w + (section_w - img_w) / 2,
+		       screen_h * 3 / 4 + (section_h - img_h) / 2);
+
+	timechime_screen_wait();
+}
+
 static bool screen_refresh_done;
 
 static void on_refr_finish(lv_event_t *e)

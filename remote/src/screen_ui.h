@@ -19,4 +19,7 @@ void timechime_screen_wait();
 // Clear the screen and add base UI lines.
 void timechime_screen_ui_clear();
 
+// Draw sprite for a specified button indicator.
+void timechime_screen_draw_button_indicator(int button, timechime_sprite_t sprite);
+
 #endif
