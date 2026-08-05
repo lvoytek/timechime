@@ -6,6 +6,9 @@
 #include <zephyr/kernel.h>
 
 #include "screen_ui.h"
+#include "sprites.h"
+
+static const lv_image_dsc_t *sprites[NUM_TIMECHIME_SPRITES];
 
 // MIPI DBI SPI config sets cs_is_gpio=false (no cs-gpios on the MIPI DBI node),
 // so the SAM0 SPI driver never asserts CS.
@@ -14,6 +17,9 @@ static const struct gpio_dt_spec epaper_cs =
 
 bool timechime_screen_init()
 {
+	sprites[TIMECHIME_SPRITE_ARROW_UP] = &sprite_up;
+	sprites[TIMECHIME_SPRITE_ARROW_DOWN] = &sprite_down;
+
 	gpio_pin_configure_dt(&epaper_cs, GPIO_OUTPUT_ACTIVE);
 
 	const struct device *display_dev = DEVICE_DT_GET(DT_CHOSEN(zephyr_display));
