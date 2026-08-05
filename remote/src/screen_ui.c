@@ -60,8 +60,6 @@ void timechime_screen_ui_clear()
 		lv_obj_set_size(v_line, 2, v_line_height);
 		lv_obj_set_pos(v_line, screen_w * i / 4, v_line_top);
 	}
-
-	timechime_screen_wait();
 }
 
 void timechime_screen_draw_button_indicator(int button, timechime_sprite_t sprite)
@@ -82,8 +80,6 @@ void timechime_screen_draw_button_indicator(int button, timechime_sprite_t sprit
 	lv_image_set_src(img, sprites[sprite]);
 	lv_obj_set_pos(img, button * section_w + (section_w - img_w) / 2,
 		       screen_h * 3 / 4 + (section_h - img_h) / 2);
-
-	timechime_screen_wait();
 }
 
 static bool screen_refresh_done;
