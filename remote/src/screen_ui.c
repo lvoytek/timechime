@@ -85,6 +85,13 @@ void timechime_screen_draw_button_indicator(int button, timechime_sprite_t sprit
 		       screen_h * 3 / 4 + (section_h - img_h) / 2);
 }
 
+void timechime_screen_draw_button_indicator_set(timechime_sprite_t sprites[4])
+{
+	for (int i = 0; i < 4; i++) {
+		timechime_screen_draw_button_indicator(i, sprites[i]);
+	}
+}
+
 static bool screen_refresh_done;
 
 static void on_refr_finish(lv_event_t *e)

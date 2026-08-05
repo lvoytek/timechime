@@ -25,4 +25,7 @@ void timechime_screen_ui_clear();
 // Draw sprite for a specified button indicator.
 void timechime_screen_draw_button_indicator(int button, timechime_sprite_t sprite);
 
+// Draw a specific set of button indicators.
+void timechime_screen_draw_button_indicator_set(timechime_sprite_t sprites[4]);
+
 #endif
