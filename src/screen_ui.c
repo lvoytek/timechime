@@ -11,6 +11,10 @@
 
 static const lv_image_dsc_t *sprites[NUM_TIMECHIME_SPRITES];
 
+// Declare custom fonts
+LV_FONT_DECLARE(font_inter);
+LV_FONT_DECLARE(font_inter_large);
+
 // MIPI DBI SPI config sets cs_is_gpio=false (no cs-gpios on the MIPI DBI node),
 // so the SAM0 SPI driver never asserts CS.
 static const struct gpio_dt_spec epaper_cs =
