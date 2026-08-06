@@ -37,11 +37,9 @@ bool timechime_screen_init()
 
 void timechime_screen_ui_clear()
 {
-	// Set white background
-	lv_obj_set_style_bg_color(lv_screen_active(), lv_color_white(), 0);
-	lv_obj_set_style_bg_opa(lv_screen_active(), LV_OPA_COVER, 0);
-
 	lv_obj_t *base_layer = lv_screen_active();
+	lv_obj_set_style_bg_color(base_layer, lv_color_white(), 0);
+	lv_obj_set_style_bg_opa(base_layer, LV_OPA_COVER, 0);
 
 	lv_coord_t screen_w = lv_display_get_horizontal_resolution(NULL);
 	lv_coord_t screen_h = lv_display_get_vertical_resolution(NULL);
