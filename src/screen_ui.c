@@ -70,6 +70,19 @@ void timechime_screen_ui_clear()
 	}
 }
 
+void timechime_screen_draw_current_time(uint8_t hour, uint8_t minute)
+{
+	lv_obj_t *base_layer = lv_screen_active();
+
+	char time_str[6];
+	snprintf(time_str, sizeof(time_str), "%02u:%02u", hour, minute);
+
+	lv_obj_t *time_label = lv_label_create(base_layer);
+	lv_label_set_text(time_label, time_str);
+	lv_obj_set_align(time_label, LV_ALIGN_CENTER);
+	lv_obj_set_style_text_font(time_label, &font_inter_large, 0);
+}
+
 void timechime_screen_draw_button_indicator(int button, timechime_sprite_t sprite)
 {
 	if (button < 0 || button >= 4 || (unsigned int)sprite >= NUM_TIMECHIME_SPRITES) {

@@ -12,6 +12,7 @@ int main(void)
 		TIMECHIME_SPRITE_ARROW_DOWN,
 		TIMECHIME_SPRITE_PLUS,
 	});
+	timechime_screen_draw_current_time(10, 35);
 	timechime_screen_wait();
 
 	return 0;
