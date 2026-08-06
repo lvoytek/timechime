@@ -22,6 +22,7 @@ bool timechime_screen_init()
 	sprites[TIMECHIME_SPRITE_PLUS] = &sprite_plus;
 	sprites[TIMECHIME_SPRITE_BELL] = &sprite_bell;
 	sprites[TIMECHIME_SPRITE_GEAR] = &sprite_gear;
+	sprites[TIMECHIME_SPRITE_TRASH] = &sprite_trash;
 
 	gpio_pin_configure_dt(&epaper_cs, GPIO_OUTPUT_ACTIVE);
 
