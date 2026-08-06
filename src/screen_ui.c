@@ -5,8 +5,9 @@
 #include <lvgl.h>
 #include <zephyr/kernel.h>
 
-#include "screen_ui.h"
 #include "sprites.h"
+
+#include "screen_ui.h"
 
 static const lv_image_dsc_t *sprites[NUM_TIMECHIME_SPRITES];
 
