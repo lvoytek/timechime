@@ -3,11 +3,11 @@
  *
  *   Arduino R3 | Feather pin | SAMD21 GPIO | Shield signal
  *   -----------+-------------+-------------+--------------
- *   D4         | D5          | PA16        | Unused SDHC CS
- *   D7         | D6          | PA18        | Busy
- *   D8         | A3          | PB9         | Reset
- *   D9         | D9          | PA19        | DC
- *   D10        | D10         | PA20        | E-paper CS
+ *   D4         | A0          | PA02        | Unused SDHC CS
+ *   D7         | A1          | PA05        | Busy
+ *   D8         | A2          | PB08        | Reset
+ *   D9         | A3          | PB09        | DC
+ *   D10        | A4          | PA04        | E-paper CS
  *   MOSI       | D24         | PB23        | sercom1 MOSI
  *   SCK        | D25         | PA17        | sercom1 SCK
  */
@@ -25,11 +25,11 @@
 		gpio-map-mask = <0xffffffff 0xffffffc0>;
 		gpio-map-pass-thru = <0 0x3f>;
 		gpio-map =
-			<ARDUINO_HEADER_R3_D4  0 &porta 16 0>,
-			<ARDUINO_HEADER_R3_D7  0 &porta 18 0>,
-			<ARDUINO_HEADER_R3_D8  0 &portb  9 0>,
-			<ARDUINO_HEADER_R3_D9  0 &porta 19 0>,
-			<ARDUINO_HEADER_R3_D10 0 &porta 20 0>;
+			<ARDUINO_HEADER_R3_D4  0 &porta 2 0>,
+			<ARDUINO_HEADER_R3_D7  0 &porta 5 0>,
+			<ARDUINO_HEADER_R3_D8  0 &portb 8 0>,
+			<ARDUINO_HEADER_R3_D9  0 &portb 9 0>,
+			<ARDUINO_HEADER_R3_D10 0 &porta 4 0>;
 	};
 };
 
