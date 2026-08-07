@@ -1,5 +1,8 @@
 /*
- * Map Arduino R3 + arduino_spi onto feather m4 express
+ * Feather m4 express pin overlay
+ * Map Arduino R3 + arduino_spi for screen compatibility.
+ * Map additional GPIOs for navigation buttons.
+ * Map Uart for GPS using gnss.
  *
  *   Arduino R3 | Feather pin | SAMD21 GPIO | Shield signal
  *   -----------+-------------+-------------+--------------
@@ -13,10 +16,35 @@
  */
 
 #include <zephyr/dt-bindings/gpio/arduino-header-r3.h>
+#include <zephyr/dt-bindings/input/input-event-codes.h>
 
 / {
 	aliases {
 		gnss = &gnss;
+		sw0 = &button0;
+		sw1 = &button1;
+		sw2 = &button2;
+		sw3 = &button3;
+	};
+
+	buttons {
+		compatible = "gpio-keys";
+		button0: button_0 {
+			gpios = <&porta 20 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;
+			zephyr,code = <INPUT_KEY_0>;
+		};
+		button1: button_1 {
+			gpios = <&porta 19 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;
+			zephyr,code = <INPUT_KEY_1>;
+		};
+		button2: button_2 {
+			gpios = <&porta 18 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;
+			zephyr,code = <INPUT_KEY_2>;
+		};
+		button3: button_3 {
+			gpios = <&porta 16 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;
+			zephyr,code = <INPUT_KEY_3>;
+		};
 	};
 
 	arduino_header: connector {

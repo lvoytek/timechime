@@ -1,10 +1,12 @@
 #include <zephyr/kernel.h>
 
 #include "screen_ui.h"
+#include "nav.h"
 #include "time.h"
 
 int main(void)
 {
+	timechime_nav_begin();
 	timechime_screen_init();
 	timechime_screen_ui_clear();
 	timechime_screen_draw_button_indicator_set((timechime_sprite_t[]){
