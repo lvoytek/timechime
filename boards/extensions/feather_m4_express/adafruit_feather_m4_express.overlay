@@ -15,6 +15,10 @@
 #include <zephyr/dt-bindings/gpio/arduino-header-r3.h>
 
 / {
+	aliases {
+		gnss = &gnss;
+	};
+
 	arduino_header: connector {
 		compatible = "arduino-header-r3";
 		#gpio-cells = <2>;
@@ -26,6 +30,14 @@
 			<ARDUINO_HEADER_R3_D8  0 &portb  9 0>,
 			<ARDUINO_HEADER_R3_D9  0 &porta 19 0>,
 			<ARDUINO_HEADER_R3_D10 0 &porta 20 0>;
+	};
+};
+
+&sercom5 {
+	current-speed = <9600>;
+
+	gnss: gnss-nmea-generic {
+		compatible = "gnss-nmea-generic";
 	};
 };
 
