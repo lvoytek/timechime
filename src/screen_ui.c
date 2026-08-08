@@ -46,9 +46,26 @@ void timechime_screen_ui_clear()
 	lv_obj_clean(base_layer);
 	lv_obj_set_style_bg_color(base_layer, lv_color_white(), 0);
 	lv_obj_set_style_bg_opa(base_layer, LV_OPA_COVER, 0);
+}
 
+void timechime_screen_draw_current_time(uint8_t hour, uint8_t minute)
+{
+	lv_obj_t *base_layer = lv_screen_active();
+
+	char time_str[6];
+	snprintf(time_str, sizeof(time_str), "%02u:%02u", hour, minute);
+
+	lv_obj_t *time_label = lv_label_create(base_layer);
+	lv_label_set_text(time_label, time_str);
+	lv_obj_set_align(time_label, LV_ALIGN_CENTER);
+	lv_obj_set_style_text_font(time_label, &font_inter_large, 0);
+}
+
+void timechime_screen_draw_button_indicator_outline()
+{
 	lv_coord_t screen_w = lv_display_get_horizontal_resolution(NULL);
 	lv_coord_t screen_h = lv_display_get_vertical_resolution(NULL);
+	lv_obj_t *base_layer = lv_screen_active();
 
 	// Horizontal line 3/4 of the way down
 	lv_obj_t *h_line = lv_obj_create(base_layer);
@@ -69,19 +86,6 @@ void timechime_screen_ui_clear()
 		lv_obj_set_size(v_line, 2, v_line_height);
 		lv_obj_set_pos(v_line, screen_w * i / 4, v_line_top);
 	}
-}
-
-void timechime_screen_draw_current_time(uint8_t hour, uint8_t minute)
-{
-	lv_obj_t *base_layer = lv_screen_active();
-
-	char time_str[6];
-	snprintf(time_str, sizeof(time_str), "%02u:%02u", hour, minute);
-
-	lv_obj_t *time_label = lv_label_create(base_layer);
-	lv_label_set_text(time_label, time_str);
-	lv_obj_set_align(time_label, LV_ALIGN_CENTER);
-	lv_obj_set_style_text_font(time_label, &font_inter_large, 0);
 }
 
 void timechime_screen_draw_button_indicator(int button, timechime_sprite_t sprite)
@@ -106,6 +110,7 @@ void timechime_screen_draw_button_indicator(int button, timechime_sprite_t sprit
 
 void timechime_screen_draw_button_indicator_set(timechime_sprite_t sprites[4])
 {
+	timechime_screen_draw_button_indicator_outline();
 	for (int i = 0; i < 4; i++) {
 		timechime_screen_draw_button_indicator(i, sprites[i]);
 	}
