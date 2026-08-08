@@ -4,6 +4,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "alarm.h"
+
+#define TIMECHIME_SCREEN_UI_MAX_ALARMS 3
+
 // The set of available sprites to display.
 typedef enum {
 	TIMECHIME_SPRITE_ARROW_UP,
@@ -33,5 +37,8 @@ void timechime_screen_draw_button_indicator(int button, timechime_sprite_t sprit
 
 // Draw a specific set of button indicators.
 void timechime_screen_draw_button_indicator_set(timechime_sprite_t sprites[4]);
+
+// Draw alarm data in a specific row.
+void timechime_screen_draw_alarm(uint8_t row, timechime_alarm_t *alarm, bool selected);
 
 #endif

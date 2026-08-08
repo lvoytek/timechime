@@ -116,6 +116,39 @@ void timechime_screen_draw_button_indicator_set(timechime_sprite_t sprites[4])
 	}
 }
 
+void timechime_screen_draw_alarm(uint8_t row, timechime_alarm_t *alarm, bool selected)
+{
+	if (row >= TIMECHIME_SCREEN_UI_MAX_ALARMS || alarm == NULL) {
+		return;
+	}
+
+	lv_obj_t *base_layer = lv_screen_active();
+
+	char time_str[6];
+	snprintf(time_str, sizeof(time_str), "%02u:%02u", alarm->hour, alarm->minute);
+
+	lv_obj_t *time_label = lv_label_create(base_layer);
+	lv_label_set_text(time_label, time_str);
+	lv_obj_set_align(time_label, LV_ALIGN_LEFT_MID);
+	lv_obj_set_style_text_font(time_label, &font_inter, 0);
+
+	char sound_id_str[4];
+	snprintf(sound_id_str, sizeof(sound_id_str), "%u", alarm->sound_id);
+
+	lv_obj_t *sound_id_label = lv_label_create(base_layer);
+	lv_label_set_text(sound_id_label, sound_id_str);
+	lv_obj_set_align(sound_id_label, LV_ALIGN_CENTER);
+	lv_obj_set_style_text_font(sound_id_label, &font_inter, 0);
+
+	char enabled_str[4];
+	snprintf(enabled_str, sizeof(enabled_str), "%s", alarm->enabled ? "ON" : "OFF");
+
+	lv_obj_t *enabled_label = lv_label_create(base_layer);
+	lv_label_set_text(enabled_label, enabled_str);
+	lv_obj_set_align(enabled_label, LV_ALIGN_RIGHT_MID);
+	lv_obj_set_style_text_font(enabled_label, &font_inter, 0);
+}
+
 static bool screen_refresh_done;
 
 static void on_refr_finish(lv_event_t *e)

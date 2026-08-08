@@ -164,6 +164,21 @@ void nav_update_alarm_list()
 		timechime_screen_draw_button_indicator_set(
 			(timechime_sprite_t[]){TIMECHIME_SPRITE_GEAR, TIMECHIME_SPRITE_ARROW_UP,
 					       TIMECHIME_SPRITE_ARROW_DOWN, TIMECHIME_SPRITE_PLUS});
+
+		uint8_t alarm_count = timechime_alarm_get_count();
+		uint8_t alarm_index_mod = selected_alarm_index % TIMECHIME_SCREEN_UI_MAX_ALARMS;
+		uint8_t start_index = selected_alarm_index - alarm_index_mod;
+		for (uint8_t i = 0; i < TIMECHIME_SCREEN_UI_MAX_ALARMS; i++) {
+			uint8_t alarm_index = start_index + i;
+			if (alarm_index < alarm_count) {
+				timechime_alarm_t *alarm;
+				if (timechime_alarm_get(alarm_index, &alarm)) {
+					timechime_screen_draw_alarm(
+						i, alarm, alarm_index == selected_alarm_index);
+				}
+			}
+		}
+
 		timechime_screen_wait();
 	}
 }
