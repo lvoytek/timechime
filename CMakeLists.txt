@@ -8,6 +8,9 @@ set(SHIELD waveshare_epaper_gdew042t2)
 find_package(Zephyr)
 project(timechime)
 
+# CMake's language init caches the host objcopy before the cross-toolchain can
+# override it; force it to the SDK's ARM binary.
+set(CMAKE_OBJCOPY "${CROSS_COMPILE}objcopy" CACHE FILEPATH "" FORCE)
 
 FILE(GLOB app_sources src/*.c)
 target_sources(app PRIVATE ${app_sources})
