@@ -132,7 +132,8 @@ void timechime_screen_draw_alarm(uint8_t row, timechime_alarm_t *alarm, bool sel
 	lv_obj_set_size(base_layer, row_w, row_h);
 	lv_obj_set_pos(base_layer, 2, row * row_h);
 	lv_obj_set_style_border_width(base_layer, 0, 0);
-	lv_obj_set_style_pad_all(base_layer, 0, 0);
+	lv_obj_set_style_pad_ver(base_layer, 0, 0);
+	lv_obj_set_style_pad_hor(base_layer, 8, 0);
 
 	// Invert if selected.
 	if (selected) {
