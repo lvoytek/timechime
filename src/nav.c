@@ -85,8 +85,13 @@ void nav_state_update_alarm_list(uint16_t button)
 {
 	uint8_t alarm_count = timechime_alarm_get_count();
 
-	if (alarm_count == 0 && button != NAV_BUTTON_ALARM_LIST_NEW) {
-		return;
+	// Edit, up, and down should do nothing for no alarms.
+	// Up and down should do nothing for a single alarm.
+	if (button != NAV_BUTTON_ALARM_LIST_NEW) {
+		if (alarm_count == 0 ||
+		    (alarm_count == 1 && button != NAV_BUTTON_ALARM_LIST_EDIT)) {
+			return;
+		}
 	}
 
 	switch (button) {
