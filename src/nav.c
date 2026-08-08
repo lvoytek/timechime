@@ -46,8 +46,12 @@ void timechime_nav_init()
 
 // ----- Nav state machine -----
 
+uint32_t last_state_change_time = 0;
+
 void timechime_nav_update_state(uint16_t button)
 {
+	last_state_change_time = k_uptime_get_32();
+
 	switch (current_state) {
 	case TIMECHIME_NAV_STATE_SHOW_TIME:
 		timechime_nav_go_to_state(TIMECHIME_NAV_STATE_ALARM_LIST);
@@ -164,7 +168,9 @@ void nav_update_show_time()
 // Repeated alarm list screen update.
 void nav_update_alarm_list()
 {
-	if (needs_screen_update()) {
+	if (k_uptime_get_32() - last_state_change_time > 60000) {
+		timechime_nav_go_to_state(TIMECHIME_NAV_STATE_SHOW_TIME);
+	} else if (needs_screen_update()) {
 		timechime_screen_ui_clear();
 		timechime_screen_draw_button_indicator_set(
 			(timechime_sprite_t[]){TIMECHIME_SPRITE_GEAR, TIMECHIME_SPRITE_ARROW_UP,
