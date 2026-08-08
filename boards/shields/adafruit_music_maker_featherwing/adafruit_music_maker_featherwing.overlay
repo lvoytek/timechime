@@ -1,0 +1,31 @@
+/ {
+	aliases {
+		sdhc0 = &sdhc0_adafruit_music_maker_featherwing;
+	};
+};
+
+/* Waveshare shield declares its own SD slot with disk-name "SD"; disable it to avoid conflict. */
+&waveshare_epaper_sdhc {
+	status = "disabled";
+	mmc {
+		status = "disabled";
+	};
+};
+
+&feather_spi {
+	status = "okay";
+	cs-gpios = <&feather_header 14 GPIO_ACTIVE_LOW>; /* D5 */
+
+	sdhc0_adafruit_music_maker_featherwing: sdhc@0 {
+		compatible = "zephyr,sdhc-spi-slot";
+		reg = <0>;
+		spi-max-frequency = <12000000>;
+		status = "okay";
+
+		sdmmc {
+			compatible = "zephyr,sdmmc-disk";
+			disk-name = "SD";
+			status = "okay";
+		};
+	};
+};

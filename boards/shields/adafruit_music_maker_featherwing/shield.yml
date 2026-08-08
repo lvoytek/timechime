@@ -1,0 +1,6 @@
+shield:
+  name: adafruit_music_maker_featherwing
+  full_name: Adafruit Music Maker FeatherWing
+  vendor: adafruit
+  supported_features:
+    - sdhc

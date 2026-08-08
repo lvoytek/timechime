@@ -1,0 +1,2 @@
+config SHIELD_ADAFRUIT_MUSIC_MAKER_FEATHERWING
+	def_bool $(shields_list_contains,adafruit_music_maker_featherwing)
