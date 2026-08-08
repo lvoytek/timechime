@@ -2,6 +2,7 @@
 #include <zephyr/input/input.h>
 #include <stdbool.h>
 
+#include "alarm.h"
 #include "screen_ui.h"
 #include "time.h"
 #include "nav.h"
@@ -37,26 +38,85 @@ static void button_input_cb(struct input_event *evt, void *user_data)
 
 INPUT_CALLBACK_DEFINE(NULL, button_input_cb, NULL);
 
+void timechime_nav_init()
+{
+	timechime_nav_go_to_state(TIMECHIME_NAV_STATE_SHOW_TIME);
+	timechime_screen_init();
+}
+
+// ----- Nav state machine -----
+
 void timechime_nav_update_state(uint16_t button)
 {
 	switch (current_state) {
 	case TIMECHIME_NAV_STATE_SHOW_TIME:
-		current_state = TIMECHIME_NAV_STATE_ALARM_LIST;
+		timechime_nav_go_to_state(TIMECHIME_NAV_STATE_ALARM_LIST);
+		break;
+	case TIMECHIME_NAV_STATE_ALARM_LIST:
+		nav_state_update_alarm_list(button);
 		break;
 	default:
-		current_state = TIMECHIME_NAV_STATE_SHOW_TIME;
+		timechime_nav_go_to_state(TIMECHIME_NAV_STATE_SHOW_TIME);
+		break;
+	}
+}
+
+// Initialize a new nav state.
+void timechime_nav_go_to_state(timechime_nav_state_t state)
+{
+	if (state < NUM_TIMECHIME_NAV_STATES) {
+		current_state = state;
+		needs_screen_update_val = true;
+	}
+}
+
+// Alarm list screen button mapping.
+static enum timechime_nav_alarm_list_buttons {
+	NAV_BUTTON_ALARM_LIST_EDIT = NAV_BUTTON_0,
+	NAV_BUTTON_ALARM_LIST_UP = NAV_BUTTON_1,
+	NAV_BUTTON_ALARM_LIST_DOWN = NAV_BUTTON_2,
+	NAV_BUTTON_ALARM_LIST_NEW = NAV_BUTTON_3,
+};
+
+static volatile uint8_t selected_alarm_index = 0;
+
+// State update in alarm list screen.
+void nav_state_update_alarm_list(uint16_t button)
+{
+	uint8_t alarm_count = timechime_alarm_get_count();
+
+	if (alarm_count == 0 && button != NAV_BUTTON_ALARM_LIST_NEW) {
+		return;
+	}
+
+	switch (button) {
+	case NAV_BUTTON_ALARM_LIST_EDIT:
+		break;
+	case NAV_BUTTON_ALARM_LIST_UP:
+		if (selected_alarm_index > 0) {
+			selected_alarm_index--;
+		} else {
+			selected_alarm_index = alarm_count - 1;
+		}
+		break;
+	case NAV_BUTTON_ALARM_LIST_DOWN:
+		if (selected_alarm_index + 1 < alarm_count) {
+			selected_alarm_index++;
+		} else {
+			selected_alarm_index = 0;
+		}
+		break;
+	case NAV_BUTTON_ALARM_LIST_NEW:
+		timechime_alarm_new(10, 30, 0, true);
+		break;
+	default:
 		break;
 	}
 
 	needs_screen_update_val = true;
 }
 
-void timechime_nav_init()
-{
-	current_state = TIMECHIME_NAV_STATE_SHOW_TIME;
-	needs_screen_update_val = true;
-	timechime_screen_init();
-}
+// ----- Looped nav screen updates -----
 
 void timechime_nav_update()
 {
@@ -74,6 +134,7 @@ void timechime_nav_update()
 	}
 }
 
+// Check if screen needs update and reset flag.
 static bool needs_screen_update()
 {
 	if (needs_screen_update_val) {
@@ -84,6 +145,7 @@ static bool needs_screen_update()
 	return false;
 }
 
+// Repeated time screen update.
 void nav_update_show_time()
 {
 	if (timechime_time_updated() || needs_screen_update()) {
@@ -94,6 +156,7 @@ void nav_update_show_time()
 	}
 }
 
+// Repeated alarm list screen update.
 void nav_update_alarm_list()
 {
 	if (needs_screen_update()) {
