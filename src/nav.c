@@ -8,10 +8,10 @@
 
 // Button values based on input key scancodes.
 enum timechime_nav_buttons {
-	TIMECHIME_NAV_BUTTON_0 = 11,
-	TIMECHIME_NAV_BUTTON_1 = 2,
-	TIMECHIME_NAV_BUTTON_2 = 3,
-	TIMECHIME_NAV_BUTTON_3 = 4,
+	NAV_BUTTON_0 = 11,
+	NAV_BUTTON_1 = 2,
+	NAV_BUTTON_2 = 3,
+	NAV_BUTTON_3 = 4,
 };
 
 typedef enum {
@@ -21,8 +21,8 @@ typedef enum {
 	NUM_TIMECHIME_NAV_STATES
 } timechime_nav_state_t;
 
-timechime_nav_state_t current_state = TIMECHIME_NAV_STATE_SHOW_TIME;
-bool needs_screen_update_val = true;
+static timechime_nav_state_t current_state = TIMECHIME_NAV_STATE_SHOW_TIME;
+static bool needs_screen_update_val = true;
 
 static void button_input_cb(struct input_event *evt, void *user_data)
 {
@@ -74,7 +74,7 @@ void timechime_nav_update()
 	}
 }
 
-bool needs_screen_update()
+static bool needs_screen_update()
 {
 	if (needs_screen_update_val) {
 		needs_screen_update_val = false;
