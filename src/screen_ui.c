@@ -122,7 +122,26 @@ void timechime_screen_draw_alarm(uint8_t row, timechime_alarm_t *alarm, bool sel
 		return;
 	}
 
-	lv_obj_t *base_layer = lv_screen_active();
+	// Create layer for this alarm.
+	lv_coord_t screen_w = lv_display_get_horizontal_resolution(NULL);
+	lv_coord_t screen_h = lv_display_get_vertical_resolution(NULL);
+	lv_coord_t row_h = (screen_h * 3 / 4) / TIMECHIME_SCREEN_UI_MAX_ALARMS;
+	lv_coord_t row_w = screen_w - 4;
+
+	lv_obj_t *base_layer = lv_obj_create(lv_screen_active());
+	lv_obj_set_size(base_layer, row_w, row_h);
+	lv_obj_set_pos(base_layer, 2, row * row_h);
+	lv_obj_set_style_border_width(base_layer, 0, 0);
+	lv_obj_set_style_pad_all(base_layer, 0, 0);
+
+	// Invert if selected.
+	if (selected) {
+		lv_obj_set_style_bg_color(base_layer, lv_color_black(), 0);
+		lv_obj_set_style_bg_opa(base_layer, LV_OPA_COVER, 0);
+		lv_obj_set_style_text_color(base_layer, lv_color_white(), 0);
+	} else {
+		lv_obj_set_style_bg_opa(base_layer, LV_OPA_TRANSP, 0);
+	}
 
 	char time_str[6];
 	snprintf(time_str, sizeof(time_str), "%02u:%02u", alarm->hour, alarm->minute);
