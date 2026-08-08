@@ -14,6 +14,11 @@ bool timechime_alarm_get(uint8_t index, timechime_alarm_t **alarm)
 	return true;
 }
 
+uint8_t timechime_alarm_get_count()
+{
+	return num_alarms;
+}
+
 bool timechime_alarm_new(uint8_t hour, uint8_t minute, uint8_t sound_id, bool enabled)
 {
 	if (num_alarms >= TIMECHIME_MAX_ALARMS) {
