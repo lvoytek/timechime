@@ -30,19 +30,19 @@
 	buttons {
 		compatible = "gpio-keys";
 		button0: button_0 {
-			gpios = <&porta 20 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;
+			gpios = <&porta 23 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;
 			zephyr,code = <INPUT_KEY_0>;
 		};
 		button1: button_1 {
-			gpios = <&porta 19 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;
+			gpios = <&porta 22 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;
 			zephyr,code = <INPUT_KEY_1>;
 		};
 		button2: button_2 {
-			gpios = <&porta 18 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;
+			gpios = <&porta 21 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;
 			zephyr,code = <INPUT_KEY_2>;
 		};
 		button3: button_3 {
-			gpios = <&porta 16 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;
+			gpios = <&porta 20 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;
 			zephyr,code = <INPUT_KEY_3>;
 		};
 	};
