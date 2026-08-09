@@ -11,11 +11,8 @@ uint8_t timechime_settings_load_alarms(timechime_alarm_t *alarms, uint8_t max_al
 // Save alarms to storage from provided array.
 void timechime_settings_save_alarms(timechime_alarm_t *alarms, uint8_t alarm_count);
 
-// Get the timezone hours offset from storage.
-int8_t timechime_settings_load_timezone_offset_hours();
-
-// Get the timezone minutes offset from storage.
-int8_t timechime_settings_load_timezone_offset_minutes();
+// Load the timezone offset from storage.
+void timechime_settings_load_timezone_offset(int8_t *hours, int8_t *minutes);
 
 // Save the timezone offset to storage.
 void timechime_settings_save_timezone_offset(int8_t hours, int8_t minutes);

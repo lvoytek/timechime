@@ -7,5 +7,6 @@
 uint8_t timechime_time_get_current_hour();
 uint8_t timechime_time_get_current_minute();
 bool timechime_time_updated();
+void timechime_time_load_timezone_offset();
 
 #endif
