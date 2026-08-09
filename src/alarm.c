@@ -1,8 +1,23 @@
 #include "alarm.h"
+#include "settings.h"
 
-#define TIMECHIME_MAX_ALARMS 25
 static timechime_alarm_t alarms[TIMECHIME_MAX_ALARMS];
 static uint8_t num_alarms = 0;
+
+static bool alarms_need_save = false;
+
+void timechime_alarm_init()
+{
+	num_alarms = timechime_settings_load_alarms(alarms, TIMECHIME_MAX_ALARMS);
+}
+
+void timechime_alarm_update()
+{
+	if (alarms_need_save) {
+		timechime_settings_save_alarms(alarms, num_alarms);
+		alarms_need_save = false;
+	}
+}
 
 bool timechime_alarm_get(uint8_t index, timechime_alarm_t **alarm)
 {
@@ -31,6 +46,8 @@ bool timechime_alarm_new(uint8_t hour, uint8_t minute, uint8_t sound_id, bool en
 	alarms[num_alarms].enabled = enabled;
 
 	num_alarms++;
+
+	alarms_need_save = true;
 	return true;
 }
 
@@ -45,5 +62,7 @@ bool timechime_alarm_delete(uint8_t index)
 	}
 
 	num_alarms--;
+
+	alarms_need_save = true;
 	return true;
 }
