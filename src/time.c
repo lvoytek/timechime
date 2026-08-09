@@ -78,3 +78,15 @@ void timechime_time_load_timezone_offset()
 	timechime_settings_load_timezone_offset(&timezone_offset_hours, &timezone_offset_minutes);
 }
 
+void timechime_time_get_timezone_offset(int8_t *hours, int8_t *minutes)
+{
+	*hours = timezone_offset_hours;
+	*minutes = timezone_offset_minutes;
+}
+
+void timechime_time_set_timezone_offset(int8_t hours, int8_t minutes)
+{
+	timezone_offset_hours = hours;
+	timezone_offset_minutes = minutes;
+	timechime_settings_save_timezone_offset(hours, minutes);
+}
