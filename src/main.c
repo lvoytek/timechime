@@ -5,6 +5,7 @@
 #include "alarm.h"
 #include "nav.h"
 #include "time.h"
+#include "usb.h"
 
 static FATFS fat_fs;
 static struct fs_mount_t mp = {
@@ -17,6 +18,7 @@ int main(void)
 {
 	fs_mount(&mp);
 
+	timechime_usb_init();
 	timechime_nav_init();
 	timechime_alarm_init();
 	timechime_time_load_timezone_offset();
