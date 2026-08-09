@@ -17,7 +17,6 @@ int main(void)
 {
 	fs_mount(&mp);
 
-	timechime_settings_save_timezone_offset(-4, 0);
 	timechime_nav_init();
 	timechime_time_load_timezone_offset();
 
