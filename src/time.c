@@ -90,3 +90,19 @@ void timechime_time_set_timezone_offset(int8_t hours, int8_t minutes)
 	timezone_offset_minutes = minutes;
 	timechime_settings_save_timezone_offset(hours, minutes);
 }
+
+uint8_t timechime_time_convert_to_12_hour(uint8_t hour)
+{
+	if (hour == 0) {
+		return 12;
+	} else if (hour > 12) {
+		return hour - 12;
+	} else {
+		return hour;
+	}
+}
+
+bool timechime_time_is_pm(uint8_t hour)
+{
+	return hour >= 12;
+}
