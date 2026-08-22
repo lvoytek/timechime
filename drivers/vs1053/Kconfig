@@ -1,0 +1,16 @@
+config AUDIO_VS1053
+	bool "VLSI VS1053b SPI audio DSP codec"
+	depends on SPI && GPIO
+	help
+	  Enable the VS1053b SPI audio DSP codec driver.
+
+	  The VS1053b decodes MP3, Ogg Vorbis, AAC, WMA, FLAC and other
+	  formats directly via SPI, using a control interface (SCI) for
+	  register access and a data interface (SDI) for compressed audio.
+
+config AUDIO_VS1053_INIT_PRIORITY
+	int "VS1053 driver init priority"
+	depends on AUDIO_VS1053
+	default 60
+	help
+	  Initialization priority for the VS1053 driver.

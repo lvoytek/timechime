@@ -1,0 +1,32 @@
+description: VLSI VS1053b SPI audio DSP codec
+
+compatible: "vlsi,vs1053"
+
+include: spi-device.yaml
+
+properties:
+  dreq-gpios:
+    type: phandle-array
+    required: true
+    description: |
+      Data request GPIO (DREQ). Goes high when device is ready for more data.
+
+  dcs-gpios:
+    type: phandle-array
+    required: true
+    description: |
+      SDI chip-select GPIO (XDCS).
+
+  reset-gpios:
+    type: phandle-array
+    required: false
+    description: |
+      Hardware reset GPIO (XRESET).
+
+  sdi-max-frequency:
+    type: int
+    default: 8000000
+    description: |
+      Maximum SPI clock frequency in Hz for the SDI interface.
+      Supports up to ~7.28 MHz at 3.3 V.
+      Default to 8 MHz.
