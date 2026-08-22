@@ -14,7 +14,8 @@
 
 &feather_spi {
 	status = "okay";
-	cs-gpios = <&feather_header 14 GPIO_ACTIVE_LOW>; /* D5 */
+	cs-gpios = <&feather_header 14 GPIO_ACTIVE_LOW>, /* D5  - SD card  */
+		   <&feather_header 15 GPIO_ACTIVE_LOW>;  /* D6  - VS1053 XCS */
 
 	sdhc0_adafruit_music_maker_featherwing: sdhc@0 {
 		compatible = "zephyr,sdhc-spi-slot";
@@ -27,5 +28,15 @@
 			disk-name = "SD";
 			status = "okay";
 		};
+	};
+
+	vs1053: vs1053@1 {
+		compatible = "vlsi,vs1053";
+		reg = <1>;
+		/* SCI (control) clock; SDI uses sdi-max-frequency (default 8 MHz) */
+		spi-max-frequency = <250000>;
+		dreq-gpios = <&feather_header 16 GPIO_ACTIVE_HIGH>; /* D9  */
+		dcs-gpios  = <&feather_header 17 GPIO_ACTIVE_LOW>;  /* D10 */
+		status = "okay";
 	};
 };
