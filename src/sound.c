@@ -3,6 +3,7 @@
 #include <ff.h>
 #include <vs1053.h>
 
+#include "screen_ui.h"
 #include "sound.h"
 
 const static struct device *dev = DEVICE_DT_GET(DT_NODELABEL(vs1053));
@@ -46,6 +47,10 @@ void timechime_sound_play()
 
 void timechime_sound_update()
 {
+	if (timechime_screen_is_busy()) {
+		return;
+	}
+
 	if (update_volume && device_is_ready(dev)) {
 		vs1053_set_volume(dev, volume_left, volume_right);
 		update_volume = false;

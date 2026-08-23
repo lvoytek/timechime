@@ -20,6 +20,25 @@ LV_FONT_DECLARE(font_inter_large);
 static const struct gpio_dt_spec epaper_cs =
 	GPIO_DT_SPEC_GET_BY_IDX(DT_NODELABEL(arduino_spi), cs_gpios, 0);
 
+static volatile bool screen_busy;
+
+bool timechime_screen_is_busy()
+{
+	return screen_busy;
+}
+
+static void screen_spi_acquire()
+{
+	screen_busy = true;
+	gpio_pin_configure_dt(&epaper_cs, GPIO_OUTPUT_ACTIVE);
+}
+
+static void screen_spi_release()
+{
+	gpio_pin_configure_dt(&epaper_cs, GPIO_OUTPUT_INACTIVE);
+	screen_busy = false;
+}
+
 bool timechime_screen_init()
 {
 	sprites[TIMECHIME_SPRITE_ARROW_UP] = &sprite_up;
@@ -30,26 +49,27 @@ bool timechime_screen_init()
 	sprites[TIMECHIME_SPRITE_TRASH] = &sprite_trash;
 	sprites[TIMECHIME_SPRITE_CONFIRM] = &sprite_confirm;
 
-	gpio_pin_configure_dt(&epaper_cs, GPIO_OUTPUT_ACTIVE);
+	screen_spi_acquire();
 
 	const struct device *display_dev = DEVICE_DT_GET(DT_CHOSEN(zephyr_display));
 	if (!device_is_ready(display_dev)) {
+		screen_spi_release();
 		return false;
 	}
 
-	gpio_pin_configure_dt(&epaper_cs, GPIO_OUTPUT_INACTIVE);
+	screen_spi_release();
 
 	return true;
 }
 
 void timechime_screen_ui_clear()
 {
-	gpio_pin_configure_dt(&epaper_cs, GPIO_OUTPUT_ACTIVE);
+	screen_spi_acquire();
 	lv_obj_t *base_layer = lv_screen_active();
 	lv_obj_clean(base_layer);
 	lv_obj_set_style_bg_color(base_layer, lv_color_white(), 0);
 	lv_obj_set_style_bg_opa(base_layer, LV_OPA_COVER, 0);
-	gpio_pin_configure_dt(&epaper_cs, GPIO_OUTPUT_INACTIVE);
+	screen_spi_release();
 }
 
 void timechime_screen_draw_current_time(uint8_t hour, uint8_t minute)
@@ -59,19 +79,19 @@ void timechime_screen_draw_current_time(uint8_t hour, uint8_t minute)
 	char time_str[6];
 	snprintf(time_str, sizeof(time_str), "%02u:%02u", hour, minute);
 
-	gpio_pin_configure_dt(&epaper_cs, GPIO_OUTPUT_ACTIVE);
+	screen_spi_acquire();
 
 	lv_obj_t *time_label = lv_label_create(base_layer);
 	lv_label_set_text(time_label, time_str);
 	lv_obj_set_align(time_label, LV_ALIGN_CENTER);
 	lv_obj_set_style_text_font(time_label, &font_inter_large, 0);
 
-	gpio_pin_configure_dt(&epaper_cs, GPIO_OUTPUT_INACTIVE);
+	screen_spi_release();
 }
 
 void timechime_screen_draw_button_indicator_outline()
 {
-	gpio_pin_configure_dt(&epaper_cs, GPIO_OUTPUT_ACTIVE);
+	screen_spi_acquire();
 
 	lv_coord_t screen_w = lv_display_get_horizontal_resolution(NULL);
 	lv_coord_t screen_h = lv_display_get_vertical_resolution(NULL);
@@ -97,7 +117,7 @@ void timechime_screen_draw_button_indicator_outline()
 		lv_obj_set_pos(v_line, screen_w * i / 4, v_line_top);
 	}
 
-	gpio_pin_configure_dt(&epaper_cs, GPIO_OUTPUT_INACTIVE);
+	screen_spi_release();
 }
 
 void timechime_screen_draw_button_indicator(int button, timechime_sprite_t sprite)
@@ -106,7 +126,7 @@ void timechime_screen_draw_button_indicator(int button, timechime_sprite_t sprit
 		return;
 	}
 
-	gpio_pin_configure_dt(&epaper_cs, GPIO_OUTPUT_ACTIVE);
+	screen_spi_acquire();
 
 	lv_coord_t screen_w = lv_display_get_horizontal_resolution(NULL);
 	lv_coord_t screen_h = lv_display_get_vertical_resolution(NULL);
@@ -121,7 +141,7 @@ void timechime_screen_draw_button_indicator(int button, timechime_sprite_t sprit
 	lv_obj_set_pos(img, button * section_w + (section_w - img_w) / 2,
 		       screen_h * 3 / 4 + (section_h - img_h) / 2);
 
-	gpio_pin_configure_dt(&epaper_cs, GPIO_OUTPUT_INACTIVE);
+	screen_spi_release();
 }
 
 void timechime_screen_draw_button_indicator_set(timechime_sprite_t sprites[4])
@@ -138,7 +158,7 @@ void timechime_screen_draw_alarm(uint8_t row, timechime_alarm_t *alarm, bool sel
 		return;
 	}
 
-	gpio_pin_configure_dt(&epaper_cs, GPIO_OUTPUT_ACTIVE);
+	screen_spi_acquire();
 
 	// Create layer for this alarm.
 	lv_coord_t screen_w = lv_display_get_horizontal_resolution(NULL);
@@ -186,7 +206,7 @@ void timechime_screen_draw_alarm(uint8_t row, timechime_alarm_t *alarm, bool sel
 	lv_obj_set_align(enabled_label, LV_ALIGN_RIGHT_MID);
 	lv_obj_set_style_text_font(enabled_label, &font_inter, 0);
 
-	gpio_pin_configure_dt(&epaper_cs, GPIO_OUTPUT_INACTIVE);
+	screen_spi_release();
 }
 
 static bool screen_refresh_done;
@@ -203,9 +223,9 @@ void timechime_screen_wait(void)
 				NULL);
 
 	while (!screen_refresh_done) {
-		gpio_pin_configure_dt(&epaper_cs, GPIO_OUTPUT_ACTIVE);
+		screen_spi_acquire();
 		lv_timer_handler();
-		gpio_pin_configure_dt(&epaper_cs, GPIO_OUTPUT_INACTIVE);
+		screen_spi_release();
 		k_sleep(K_MSEC(10));
 	}
 }

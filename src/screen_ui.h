@@ -41,4 +41,7 @@ void timechime_screen_draw_button_indicator_set(timechime_sprite_t sprites[4]);
 // Draw alarm data in a specific row.
 void timechime_screen_draw_alarm(uint8_t row, timechime_alarm_t *alarm, bool selected);
 
+// Returns true while the screen is actively using the SPI bus.
+bool timechime_screen_is_busy();
+
 #endif
