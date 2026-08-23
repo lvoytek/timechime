@@ -17,4 +17,10 @@ void timechime_settings_load_timezone_offset(int8_t *hours, int8_t *minutes);
 // Save the timezone offset to storage.
 void timechime_settings_save_timezone_offset(int8_t hours, int8_t minutes);
 
+// Load list of sound files from storage to provided array and return number loaded.
+uint8_t timechime_settings_load_sound_files(char sound_files[255][65]);
+
+// Save list of sound files to storage from provided array.
+void timechime_settings_save_sound_files(char sound_files[255][65], uint8_t sound_file_count);
+
 #endif

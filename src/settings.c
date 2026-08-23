@@ -92,3 +92,49 @@ void timechime_settings_save_timezone_offset(int8_t hours, int8_t minutes)
 	fs_write(&file, data, strnlen(data, sizeof(data)));
 	fs_close(&file);
 }
+
+uint8_t timechime_settings_load_sound_files(char sound_files[255][65])
+{
+	uint8_t count = 0;
+
+	struct fs_file_t file;
+	fs_file_t_init(&file);
+	fs_open(&file, "/SD:/sounds.txt", FS_O_READ);
+
+	char data[255 * 65];
+	int bytes_read = fs_read(&file, data, sizeof(data) - 1);
+	data[bytes_read > 0 ? bytes_read : 0] = '\0';
+	fs_close(&file);
+
+	char *line = data;
+	char *next_line = strchr(line, '\n');
+
+	while (line != NULL && next_line != NULL) {
+		*next_line = '\0';
+
+		snprintf(sound_files[count], sizeof(sound_files[count]), "%s", line);
+		count++;
+
+		line = next_line + 1;
+		next_line = strchr(line, '\n');
+	}
+
+	return count;
+}
+
+void timechime_settings_save_sound_files(char sound_files[255][65], uint8_t sound_file_count)
+{
+	struct fs_file_t file;
+	fs_file_t_init(&file);
+	fs_open(&file, "/SD:/sounds.txt", FS_O_CREATE | FS_O_WRITE);
+	fs_truncate(&file, 0);
+
+	char data[255 * 65];
+	size_t offset = 0;
+	for (uint8_t i = 0; i < sound_file_count && offset < sizeof(data); i++) {
+		offset += snprintf(data + offset, sizeof(data) - offset, "%s\n", sound_files[i]);
+	}
+
+	fs_write(&file, data, offset);
+	fs_close(&file);
+}

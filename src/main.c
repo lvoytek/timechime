@@ -22,6 +22,7 @@ int main(void)
 	timechime_usb_init();
 	timechime_nav_init();
 	timechime_alarm_init();
+	timechime_sound_init();
 	timechime_time_load_timezone_offset();
 
 	timechime_sound_queue_set_volume(0x00, 0x00);

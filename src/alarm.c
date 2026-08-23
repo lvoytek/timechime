@@ -80,8 +80,7 @@ void timechime_alarm_check_and_queue()
 		if (alarm->enabled && alarm->hour == current_hour &&
 		    alarm->minute == current_minute) {
 			char sound_file[65];
-			snprintf(sound_file, sizeof(sound_file), "/SD:/%u.mp3", alarm->sound_id);
-			timechime_queue_sound_play(sound_file);
+			timechime_queue_sound_play(alarm->sound_id);
 			break;
 		}
 	}
