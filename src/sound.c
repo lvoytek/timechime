@@ -1,0 +1,58 @@
+#include <stdbool.h>
+#include <zephyr/fs/fs.h>
+#include <ff.h>
+#include <vs1053.h>
+
+#include "sound.h"
+
+const static struct device *dev = DEVICE_DT_GET(DT_NODELABEL(vs1053));
+
+static char current_sound_file[65] = "";
+static bool play_sound = false;
+
+static uint8_t volume_left = 0x00;
+static uint8_t volume_right = 0x00;
+static bool update_volume = false;
+
+void timechime_sound_queue_set_volume(uint8_t left, uint8_t right)
+{
+	volume_left = left;
+	volume_right = right;
+	update_volume = true;
+}
+
+void timechime_queue_sound_play(const char *sound_file)
+{
+	snprintf(current_sound_file, sizeof(current_sound_file), "%s", sound_file);
+	play_sound = true;
+}
+
+void timechime_sound_play()
+{
+	if (device_is_ready(dev)) {
+		struct fs_file_t f;
+		uint8_t buf[VS1053_SDI_CHUNK_SIZE];
+		ssize_t n;
+
+		fs_file_t_init(&f);
+		if (fs_open(&f, current_sound_file, FS_O_READ) == 0) {
+			while ((n = fs_read(&f, buf, sizeof(buf))) > 0) {
+				vs1053_sdi_write(dev, buf, n);
+			}
+			fs_close(&f);
+		}
+	}
+}
+
+void timechime_sound_update()
+{
+	if (update_volume && device_is_ready(dev)) {
+		vs1053_set_volume(dev, volume_left, volume_right);
+		update_volume = false;
+	}
+
+	if (play_sound) {
+		timechime_sound_play();
+		play_sound = false;
+	}
+}

@@ -4,6 +4,7 @@
 
 #include "alarm.h"
 #include "nav.h"
+#include "sound.h"
 #include "time.h"
 #include "usb.h"
 
@@ -23,9 +24,12 @@ int main(void)
 	timechime_alarm_init();
 	timechime_time_load_timezone_offset();
 
+	timechime_sound_queue_set_volume(0x00, 0x00);
+
 	while (1) {
 		timechime_nav_update();
 		timechime_alarm_update();
+		timechime_sound_update();
 		k_sleep(K_MSEC(100));
 	}
 
