@@ -162,6 +162,7 @@ void nav_update_show_time()
 		timechime_screen_draw_current_time(timechime_time_get_current_hour(),
 						   timechime_time_get_current_minute());
 		timechime_screen_wait();
+		timechime_alarm_check_and_queue();
 	}
 }
 

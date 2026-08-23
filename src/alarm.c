@@ -1,5 +1,7 @@
 #include "alarm.h"
 #include "settings.h"
+#include "sound.h"
+#include "time.h"
 
 static timechime_alarm_t alarms[TIMECHIME_MAX_ALARMS];
 static uint8_t num_alarms = 0;
@@ -65,4 +67,22 @@ bool timechime_alarm_delete(uint8_t index)
 
 	alarms_need_save = true;
 	return true;
+}
+
+void timechime_alarm_check_and_queue()
+{
+	uint8_t current_hour = timechime_time_get_current_hour();
+	uint8_t current_minute = timechime_time_get_current_minute();
+
+	for (uint8_t i = 0; i < num_alarms; i++) {
+		timechime_alarm_t *alarm = &alarms[i];
+
+		if (alarm->enabled && alarm->hour == current_hour &&
+		    alarm->minute == current_minute) {
+			char sound_file[65];
+			snprintf(sound_file, sizeof(sound_file), "/SD:/%u.mp3", alarm->sound_id);
+			timechime_queue_sound_play(sound_file);
+			break;
+		}
+	}
 }

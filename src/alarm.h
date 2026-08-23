@@ -31,4 +31,7 @@ bool timechime_alarm_new(uint8_t hour, uint8_t minute, uint8_t sound_id, bool en
 // Delete the alarm at the specified index.
 bool timechime_alarm_delete(uint8_t index);
 
+// Check if alarm should be played and queue if so.
+void timechime_alarm_check_and_queue();
+
 #endif
