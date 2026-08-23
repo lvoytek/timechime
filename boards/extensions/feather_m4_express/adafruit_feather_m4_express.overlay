@@ -28,6 +28,11 @@
 		sw3 = &button3;
 	};
 
+	epaper_cs_gpio: epaper-cs-gpio {
+		compatible = "timechime,cs-gpio";
+		gpios = <&porta 4 GPIO_ACTIVE_LOW>;
+	};
+
 	buttons {
 		compatible = "gpio-keys";
 		button0: button_0 {

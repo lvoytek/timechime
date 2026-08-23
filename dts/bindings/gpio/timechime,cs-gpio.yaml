@@ -1,0 +1,8 @@
+description: Standalone chip-select GPIO pin.
+
+compatible: "timechime,cs-gpio"
+
+properties:
+  gpios:
+    type: phandle-array
+    required: true
