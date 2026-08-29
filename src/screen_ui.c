@@ -30,6 +30,7 @@ bool timechime_screen_init()
 	sprites[TIMECHIME_SPRITE_ARROW_DOWN] = &sprite_down;
 	sprites[TIMECHIME_SPRITE_PLUS] = &sprite_plus;
 	sprites[TIMECHIME_SPRITE_BELL] = &sprite_bell;
+	sprites[TIMECHIME_SPRITE_SOUND_SELECT] = &sprite_sound_select;
 	sprites[TIMECHIME_SPRITE_GEAR] = &sprite_gear;
 	sprites[TIMECHIME_SPRITE_TRASH] = &sprite_trash;
 	sprites[TIMECHIME_SPRITE_CONFIRM] = &sprite_confirm;
