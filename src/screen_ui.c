@@ -53,17 +53,37 @@ void timechime_screen_ui_clear()
 	lv_obj_set_style_bg_opa(base_layer, LV_OPA_COVER, 0);
 }
 
-void timechime_screen_draw_current_time(uint8_t hour, uint8_t minute)
+void timechime_screen_draw_current_time(uint8_t hour, uint8_t minute, bool show_am_pm, bool is_pm)
 {
 	lv_obj_t *base_layer = lv_screen_active();
 
-	char time_str[6];
-	snprintf(time_str, sizeof(time_str), "%02u:%02u", hour, minute);
+	lv_obj_t *row = lv_obj_create(base_layer);
+	lv_obj_set_size(row, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+	lv_obj_set_style_bg_opa(row, LV_OPA_TRANSP, 0);
+	lv_obj_set_style_border_width(row, 0, 0);
+	lv_obj_set_style_pad_all(row, 0, 0);
+	lv_obj_set_style_pad_column(row, 4, 0);
+	lv_obj_set_flex_flow(row, LV_FLEX_FLOW_ROW);
+	lv_obj_set_flex_align(row, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_END, LV_FLEX_ALIGN_CENTER);
+	lv_obj_set_align(row, LV_ALIGN_CENTER);
 
-	lv_obj_t *time_label = lv_label_create(base_layer);
+	char time_str[6];
+
+	if (show_am_pm) {
+		snprintf(time_str, sizeof(time_str), "%u:%02u", hour, minute);
+	} else {
+		snprintf(time_str, sizeof(time_str), "%02u:%02u", hour, minute);
+	}
+
+	lv_obj_t *time_label = lv_label_create(row);
 	lv_label_set_text(time_label, time_str);
-	lv_obj_set_align(time_label, LV_ALIGN_CENTER);
 	lv_obj_set_style_text_font(time_label, &font_inter_large, 0);
+
+	if (show_am_pm) {
+		lv_obj_t *am_pm_label = lv_label_create(row);
+		lv_label_set_text(am_pm_label, is_pm ? "PM" : "AM");
+		lv_obj_set_style_text_font(am_pm_label, &font_inter, 0);
+	}
 }
 
 void timechime_screen_draw_gps_search()

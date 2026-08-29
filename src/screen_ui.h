@@ -31,7 +31,7 @@ void timechime_screen_wait();
 void timechime_screen_ui_clear();
 
 // Draw the large current time
-void timechime_screen_draw_current_time(uint8_t hour, uint8_t minute);
+void timechime_screen_draw_current_time(uint8_t hour, uint8_t minute, bool show_am_pm, bool is_pm);
 
 // Draw search for GPS screen
 void timechime_screen_draw_gps_search();

@@ -11,6 +11,7 @@ static volatile bool time_updated = false;
 
 static int8_t timezone_offset_hours = 0;
 static int8_t timezone_offset_minutes = 0;
+static bool timezone_format_12hr = false;
 
 #define GNSS_MODEM DEVICE_DT_GET(DT_ALIAS(gnss))
 
@@ -53,14 +54,34 @@ static void gnss_data_cb(const struct device *dev, const struct gnss_data *data)
 
 GNSS_DATA_CALLBACK_DEFINE(GNSS_MODEM, gnss_data_cb);
 
+uint8_t timechime_time_convert_to_12_hour(uint8_t hour)
+{
+	if (hour == 0) {
+		return 12;
+	} else if (hour > 12) {
+		return hour - 12;
+	} else {
+		return hour;
+	}
+}
+
 uint8_t timechime_time_get_current_hour()
 {
+	if (timezone_format_12hr) {
+		return timechime_time_convert_to_12_hour(current_hour);
+	}
+
 	return current_hour;
 }
 
 uint8_t timechime_time_get_current_minute()
 {
 	return current_minute;
+}
+
+bool timechime_time_current_time_is_pm()
+{
+	return current_hour >= 12;
 }
 
 bool timechime_time_updated()
@@ -73,9 +94,10 @@ bool timechime_time_updated()
 	return true;
 }
 
-void timechime_time_load_timezone_offset()
+void timechime_time_load_preferences()
 {
 	timechime_settings_load_timezone_offset(&timezone_offset_hours, &timezone_offset_minutes);
+	timezone_format_12hr = timechime_settings_load_use_12hr_format();
 }
 
 void timechime_time_get_timezone_offset(int8_t *hours, int8_t *minutes)
@@ -91,18 +113,7 @@ void timechime_time_set_timezone_offset(int8_t hours, int8_t minutes)
 	timechime_settings_save_timezone_offset(hours, minutes);
 }
 
-uint8_t timechime_time_convert_to_12_hour(uint8_t hour)
+bool timechime_time_using_12hr_format()
 {
-	if (hour == 0) {
-		return 12;
-	} else if (hour > 12) {
-		return hour - 12;
-	} else {
-		return hour;
-	}
-}
-
-bool timechime_time_is_pm(uint8_t hour)
-{
-	return hour >= 12;
+	return timezone_format_12hr;
 }

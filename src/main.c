@@ -7,6 +7,7 @@
 #include "sound.h"
 #include "time.h"
 #include "usb.h"
+#include "settings.h"
 
 static FATFS fat_fs;
 static struct fs_mount_t mp = {
@@ -23,7 +24,7 @@ int main(void)
 	timechime_nav_init();
 	timechime_alarm_init();
 	timechime_sound_init();
-	timechime_time_load_timezone_offset();
+	timechime_time_load_preferences();
 
 	timechime_sound_queue_set_volume(0x00, 0x00);
 

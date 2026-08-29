@@ -165,9 +165,12 @@ void nav_update_show_time()
 		timechime_screen_wait();
 	} else if (timechime_time_updated() || needs_screen_update()) {
 		initial_time_update_done = true;
+
 		timechime_screen_ui_clear();
-		timechime_screen_draw_current_time(timechime_time_get_current_hour(),
-						   timechime_time_get_current_minute());
+		timechime_screen_draw_current_time(
+			timechime_time_get_current_hour(), timechime_time_get_current_minute(),
+			timechime_time_using_12hr_format(), timechime_time_current_time_is_pm());
+
 		timechime_screen_wait();
 		timechime_alarm_check_and_queue();
 	}
