@@ -31,6 +31,8 @@ bool timechime_screen_init()
 	sprites[TIMECHIME_SPRITE_PLUS] = &sprite_plus;
 	sprites[TIMECHIME_SPRITE_BELL] = &sprite_bell;
 	sprites[TIMECHIME_SPRITE_SOUND_SELECT] = &sprite_sound_select;
+	sprites[TIMECHIME_SPRITE_TOGGLE_ON] = &sprite_toggle_on;
+	sprites[TIMECHIME_SPRITE_TOGGLE_OFF] = &sprite_toggle_off;
 	sprites[TIMECHIME_SPRITE_GEAR] = &sprite_gear;
 	sprites[TIMECHIME_SPRITE_TRASH] = &sprite_trash;
 	sprites[TIMECHIME_SPRITE_CONFIRM] = &sprite_confirm;
