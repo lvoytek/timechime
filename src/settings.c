@@ -99,7 +99,7 @@ bool timechime_settings_load_use_12hr_format()
 
 	struct fs_file_t file;
 	fs_file_t_init(&file);
-	fs_open(&file, "/SD:/timeformat.txt", FS_O_READ);
+	fs_open(&file, "/SD:/timefmt.txt", FS_O_READ);
 
 	char data[2];
 	fs_read(&file, data, sizeof(data));
@@ -116,7 +116,7 @@ void timechime_settings_save_use_12hr_format(bool use_12hr_format)
 {
 	struct fs_file_t file;
 	fs_file_t_init(&file);
-	fs_open(&file, "/SD:/timeformat.txt", FS_O_CREATE | FS_O_WRITE);
+	fs_open(&file, "/SD:/timefmt.txt", FS_O_CREATE | FS_O_WRITE);
 
 	char data[2];
 	snprintf(data, sizeof(data), "%d", use_12hr_format ? 1 : 0);
