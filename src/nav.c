@@ -76,10 +76,10 @@ void timechime_nav_go_to_state(timechime_nav_state_t state)
 
 // Alarm list screen button mapping.
 static enum timechime_nav_alarm_list_buttons {
-	NAV_BUTTON_ALARM_LIST_EDIT = NAV_BUTTON_0,
-	NAV_BUTTON_ALARM_LIST_UP = NAV_BUTTON_1,
-	NAV_BUTTON_ALARM_LIST_DOWN = NAV_BUTTON_2,
-	NAV_BUTTON_ALARM_LIST_NEW = NAV_BUTTON_3,
+	NAV_BUTTON_ALARM_LIST_UP = NAV_BUTTON_0,
+	NAV_BUTTON_ALARM_LIST_DOWN = NAV_BUTTON_1,
+	NAV_BUTTON_ALARM_LIST_EDIT_SOUND = NAV_BUTTON_2,
+	NAV_BUTTON_ALARM_LIST_TOGGLE = NAV_BUTTON_3,
 };
 
 static volatile uint8_t selected_alarm_index = 0;
@@ -89,17 +89,13 @@ void nav_state_update_alarm_list(uint16_t button)
 {
 	uint8_t alarm_count = timechime_alarm_get_count();
 
-	// Edit, up, and down should do nothing for no alarms.
-	// Up and down should do nothing for a single alarm.
-	if (button != NAV_BUTTON_ALARM_LIST_NEW) {
-		if (alarm_count == 0 ||
-		    (alarm_count == 1 && button != NAV_BUTTON_ALARM_LIST_EDIT)) {
-			return;
-		}
+	// Ignore buttons when there are no alarms
+	if (alarm_count == 0) {
+		return;
 	}
 
 	switch (button) {
-	case NAV_BUTTON_ALARM_LIST_EDIT:
+	case NAV_BUTTON_ALARM_LIST_EDIT_SOUND:
 		break;
 	case NAV_BUTTON_ALARM_LIST_UP:
 		if (selected_alarm_index > 0) {
@@ -115,8 +111,7 @@ void nav_state_update_alarm_list(uint16_t button)
 			selected_alarm_index = 0;
 		}
 		break;
-	case NAV_BUTTON_ALARM_LIST_NEW:
-		timechime_alarm_new(10, 30, 0, true);
+	case NAV_BUTTON_ALARM_LIST_TOGGLE:
 		break;
 	default:
 		break;
@@ -183,10 +178,8 @@ void nav_update_alarm_list()
 		timechime_nav_go_to_state(TIMECHIME_NAV_STATE_SHOW_TIME);
 	} else if (needs_screen_update()) {
 		timechime_screen_ui_clear();
-		timechime_screen_draw_button_indicator_set(
-			(timechime_sprite_t[]){TIMECHIME_SPRITE_GEAR, TIMECHIME_SPRITE_ARROW_UP,
-					       TIMECHIME_SPRITE_ARROW_DOWN, TIMECHIME_SPRITE_PLUS});
 
+		bool selected_alarm_enabled = false;
 		uint8_t alarm_count = timechime_alarm_get_count();
 		uint8_t alarm_index_mod = selected_alarm_index % TIMECHIME_SCREEN_UI_MAX_ALARMS;
 		uint8_t start_index = selected_alarm_index - alarm_index_mod;
@@ -197,9 +190,19 @@ void nav_update_alarm_list()
 				if (timechime_alarm_get(alarm_index, &alarm)) {
 					timechime_screen_draw_alarm(
 						i, alarm, alarm_index == selected_alarm_index);
+
+					if (alarm_index == selected_alarm_index) {
+						selected_alarm_enabled = alarm->enabled;
+					}
 				}
 			}
 		}
+
+		timechime_screen_draw_button_indicator_set((timechime_sprite_t[]){
+			TIMECHIME_SPRITE_ARROW_UP, TIMECHIME_SPRITE_ARROW_DOWN,
+			TIMECHIME_SPRITE_SOUND_SELECT,
+			selected_alarm_enabled ? TIMECHIME_SPRITE_TOGGLE_ON
+					       : TIMECHIME_SPRITE_TOGGLE_OFF});
 
 		timechime_screen_wait();
 	}
