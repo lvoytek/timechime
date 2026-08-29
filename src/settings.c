@@ -93,6 +93,38 @@ void timechime_settings_save_timezone_offset(int8_t hours, int8_t minutes)
 	fs_close(&file);
 }
 
+bool timechime_settings_load_use_12hr_format()
+{
+	bool use_12hr_format = true;
+
+	struct fs_file_t file;
+	fs_file_t_init(&file);
+	fs_open(&file, "/SD:/timeformat.txt", FS_O_READ);
+
+	char data[2];
+	fs_read(&file, data, sizeof(data));
+	fs_close(&file);
+
+	int value = 1;
+	sscanf(data, "%d", &value);
+	use_12hr_format = (value != 0);
+
+	return use_12hr_format;
+}
+
+void timechime_settings_save_use_12hr_format(bool use_12hr_format)
+{
+	struct fs_file_t file;
+	fs_file_t_init(&file);
+	fs_open(&file, "/SD:/timeformat.txt", FS_O_CREATE | FS_O_WRITE);
+
+	char data[2];
+	snprintf(data, sizeof(data), "%d", use_12hr_format ? 1 : 0);
+
+	fs_write(&file, data, strnlen(data, sizeof(data)));
+	fs_close(&file);
+}
+
 uint8_t timechime_settings_load_sound_files(char sound_files[255][65])
 {
 	uint8_t count = 0;
