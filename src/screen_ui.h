@@ -17,6 +17,7 @@ typedef enum {
 	TIMECHIME_SPRITE_GEAR,
 	TIMECHIME_SPRITE_TRASH,
 	TIMECHIME_SPRITE_CONFIRM,
+	TIMECHIME_SPRITE_GPSSEARCH,
 	NUM_TIMECHIME_SPRITES
 } timechime_sprite_t;
 
@@ -31,6 +32,9 @@ void timechime_screen_ui_clear();
 
 // Draw the large current time
 void timechime_screen_draw_current_time(uint8_t hour, uint8_t minute);
+
+// Draw search for GPS screen
+void timechime_screen_draw_gps_search();
 
 // Draw sprite for a specified button indicator.
 void timechime_screen_draw_button_indicator(int button, timechime_sprite_t sprite);

@@ -155,9 +155,16 @@ static bool needs_screen_update()
 }
 
 // Repeated time screen update.
+static bool initial_time_update_done = false;
+
 void nav_update_show_time()
 {
-	if (timechime_time_updated() || needs_screen_update()) {
+	if (!initial_time_update_done && needs_screen_update()) {
+		timechime_screen_ui_clear();
+		timechime_screen_draw_gps_search();
+		timechime_screen_wait();
+	} else if (timechime_time_updated() || needs_screen_update()) {
+		initial_time_update_done = true;
 		timechime_screen_ui_clear();
 		timechime_screen_draw_current_time(timechime_time_get_current_hour(),
 						   timechime_time_get_current_minute());

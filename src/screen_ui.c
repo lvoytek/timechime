@@ -15,8 +15,7 @@ static const lv_image_dsc_t *sprites[NUM_TIMECHIME_SPRITES];
 LV_FONT_DECLARE(font_inter);
 LV_FONT_DECLARE(font_inter_large);
 
-static const struct gpio_dt_spec epaper_cs =
-	GPIO_DT_SPEC_GET(DT_NODELABEL(epaper_cs_gpio), gpios);
+static const struct gpio_dt_spec epaper_cs = GPIO_DT_SPEC_GET(DT_NODELABEL(epaper_cs_gpio), gpios);
 
 static volatile bool screen_busy;
 
@@ -34,6 +33,7 @@ bool timechime_screen_init()
 	sprites[TIMECHIME_SPRITE_GEAR] = &sprite_gear;
 	sprites[TIMECHIME_SPRITE_TRASH] = &sprite_trash;
 	sprites[TIMECHIME_SPRITE_CONFIRM] = &sprite_confirm;
+	sprites[TIMECHIME_SPRITE_GPSSEARCH] = &sprite_gpssearch;
 
 	gpio_pin_configure_dt(&epaper_cs, GPIO_OUTPUT_INACTIVE);
 
@@ -64,6 +64,19 @@ void timechime_screen_draw_current_time(uint8_t hour, uint8_t minute)
 	lv_label_set_text(time_label, time_str);
 	lv_obj_set_align(time_label, LV_ALIGN_CENTER);
 	lv_obj_set_style_text_font(time_label, &font_inter_large, 0);
+}
+
+void timechime_screen_draw_gps_search()
+{
+	lv_obj_t *base_layer = lv_screen_active();
+
+	int32_t img_w = sprites[TIMECHIME_SPRITE_GPSSEARCH]->header.w;
+	int32_t img_h = sprites[TIMECHIME_SPRITE_GPSSEARCH]->header.h;
+
+	lv_obj_t *img = lv_image_create(lv_screen_active());
+	lv_image_set_src(img, sprites[TIMECHIME_SPRITE_GPSSEARCH]);
+	lv_obj_set_pos(img, (lv_display_get_horizontal_resolution(NULL) - img_w) / 2,
+		       (lv_display_get_vertical_resolution(NULL) - img_h) / 2);
 }
 
 void timechime_screen_draw_button_indicator_outline()
