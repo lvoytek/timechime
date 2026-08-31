@@ -67,23 +67,25 @@ static const struct usb_bos_webusb_desc bos_cap_webusb = {
 /* WebUSB URL Descriptor, see https://wicg.github.io/webusb/#webusb-descriptors */
 static const uint8_t webusb_origin_url[] = {
 	/* bLength, bDescriptorType, bScheme, UTF-8 encoded URL */
-	0x11,
+	0x13,
 	WEBUSB_DESC_TYPE_URL,
 	WEBUSB_URL_PREFIX_HTTP,
-	'l',
-	'o',
-	'c',
 	'a',
 	'l',
-	'h',
+	'a',
+	'r',
+	'm',
+	'.',
+	'v',
 	'o',
-	's',
+	'y',
 	't',
-	':',
-	'8',
-	'0',
-	'0',
-	'0'};
+	'e',
+	'k',
+	'.',
+	'd',
+	'e',
+	'v'};
 
 static int webusb_to_host_cb(const struct usbd_context *const ctx,
 			     const struct usb_setup_packet *const setup, struct net_buf *const buf)
