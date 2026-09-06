@@ -7,10 +7,15 @@
  *   0x03               GET_ALARMS    (no payload)
  *   0x04 <h> <m> <s> <e>  ADD_ALARM (hour, minute, sound_id, enabled)
  *   0x05 <i>           DELETE_ALARM  (uint8 index)
+ *   0x06 <n> <name...> SOUND_UPLOAD_BEGIN (uint8 name length, then name bytes)
+ *   0x07 <n> <data...> SOUND_UPLOAD_DATA  (uint8 chunk length, then chunk bytes)
+ *   0x08               SOUND_UPLOAD_END   (no payload)
+ *   0x09               SOUND_UPLOAD_ABORT (no payload)
  *
  * Device -> Host responses:
  *   0x01 <h> <m>           TIMEZONE  (int8 hours, int8 minutes)
  *   0x03 <n> [h m s e]...  ALARMS    (count, then 4 bytes per alarm)
+ *   0x06 <i>               SOUND_ADDED (uint8 sound index)
  *   0xFF                   ACK
  *   0xFE                   NAK
  */
@@ -28,21 +33,27 @@ LOG_MODULE_REGISTER(timechime_usb, LOG_LEVEL_INF);
 #include "webusb.h"
 #include "msosv2.h"
 #include "alarm.h"
+#include "sound.h"
 #include "time.h"
 
 #define TIMECHIME_USB_VID 0x1E2A
 #define TIMECHIME_USB_PID 0x000A
 
-#define CMD_GET_TIMEZONE 0x01
-#define CMD_SET_TIMEZONE 0x02
-#define CMD_GET_ALARMS   0x03
-#define CMD_ADD_ALARM    0x04
-#define CMD_DELETE_ALARM 0x05
+#define CMD_GET_TIMEZONE       0x01
+#define CMD_SET_TIMEZONE       0x02
+#define CMD_GET_ALARMS         0x03
+#define CMD_ADD_ALARM          0x04
+#define CMD_DELETE_ALARM       0x05
+#define CMD_SOUND_UPLOAD_BEGIN 0x06
+#define CMD_SOUND_UPLOAD_DATA  0x07
+#define CMD_SOUND_UPLOAD_END   0x08
+#define CMD_SOUND_UPLOAD_ABORT 0x09
 
-#define RESP_TIMEZONE 0x01
-#define RESP_ALARMS   0x03
-#define RESP_ACK      0xFF
-#define RESP_NAK      0xFE
+#define RESP_TIMEZONE    0x01
+#define RESP_ALARMS      0x03
+#define RESP_SOUND_ADDED 0x06
+#define RESP_ACK         0xFF
+#define RESP_NAK         0xFE
 
 #define TCUSB_BUF_SIZE 256
 
@@ -179,6 +190,61 @@ static size_t tcusb_build_response(const uint8_t *cmd, size_t cmd_len, uint8_t *
 		bool ok = timechime_alarm_delete(cmd[1]);
 
 		resp[0] = ok ? RESP_ACK : RESP_NAK;
+		return 1;
+	}
+	case CMD_SOUND_UPLOAD_BEGIN: {
+		char name[TIMECHIME_SOUND_NAME_MAX_LEN + 1];
+
+		if (cmd_len < 2) {
+			resp[0] = RESP_NAK;
+			return 1;
+		}
+
+		uint8_t name_len = cmd[1];
+
+		if (name_len == 0 || name_len > TIMECHIME_SOUND_NAME_MAX_LEN ||
+		    cmd_len < 2U + (size_t)name_len) {
+			resp[0] = RESP_NAK;
+			return 1;
+		}
+
+		memcpy(name, &cmd[2], name_len);
+		name[name_len] = '\0';
+
+		resp[0] = timechime_sound_upload_begin(name) ? RESP_ACK : RESP_NAK;
+		return 1;
+	}
+	case CMD_SOUND_UPLOAD_DATA: {
+		if (cmd_len < 2) {
+			resp[0] = RESP_NAK;
+			return 1;
+		}
+
+		uint8_t chunk_len = cmd[1];
+
+		if (cmd_len < 2U + (size_t)chunk_len) {
+			resp[0] = RESP_NAK;
+			return 1;
+		}
+
+		resp[0] = timechime_sound_upload_write(&cmd[2], chunk_len) ? RESP_ACK : RESP_NAK;
+		return 1;
+	}
+	case CMD_SOUND_UPLOAD_END: {
+		uint8_t sound_index;
+
+		if (resp_max < 2 || !timechime_sound_upload_finish(&sound_index)) {
+			resp[0] = RESP_NAK;
+			return 1;
+		}
+
+		resp[0] = RESP_SOUND_ADDED;
+		resp[1] = sound_index;
+		return 2;
+	}
+	case CMD_SOUND_UPLOAD_ABORT: {
+		timechime_sound_upload_abort();
+		resp[0] = RESP_ACK;
 		return 1;
 	}
 	default:
