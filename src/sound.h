@@ -16,4 +16,7 @@ void timechime_queue_sound_play(uint8_t sound_file_index);
 // Sound loop update.
 void timechime_sound_update();
 
+// Add a new sound file to the system.
+void timechime_sound_add(const char *file_path);
+
 #endif

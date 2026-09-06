@@ -33,6 +33,18 @@ bool timechime_sound_init()
 	return true;
 }
 
+void timechime_sound_add(const char *file_path)
+{
+	if (num_sound_files >= 255) {
+		return;
+	}
+
+	strncpy(sound_files[num_sound_files], file_path, 64);
+	sound_files[num_sound_files][64] = '\0';
+	num_sound_files++;
+	timechime_settings_save_sound_files(sound_files, num_sound_files);
+}
+
 void timechime_sound_queue_set_volume(uint8_t left, uint8_t right)
 {
 	volume_left = left;
