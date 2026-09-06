@@ -19,4 +19,7 @@ void timechime_sound_update();
 // Add a new sound file to the system.
 void timechime_sound_add(const char *file_path);
 
+// Remove a sound file from the system.
+void timechime_sound_remove(uint8_t sound_file_index);
+
 #endif
