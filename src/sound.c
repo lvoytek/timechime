@@ -1,9 +1,15 @@
 #include <zephyr/fs/fs.h>
+#include <zephyr/sys/util.h>
 #include <ff.h>
 #include <vs1053.h>
 
+#include <stdio.h>
+#include <string.h>
+
 #include "screen_ui.h"
 #include "sound.h"
+
+#define TIMECHIME_SOUND_DIR "/SD:/sounds"
 
 const static struct device *dev = DEVICE_DT_GET(DT_NODELABEL(vs1053));
 
@@ -15,6 +21,10 @@ static bool play_sound = false;
 static uint8_t volume_left = 0x00;
 static uint8_t volume_right = 0x00;
 static bool update_volume = false;
+
+static struct fs_file_t upload_file;
+static char upload_path[65];
+static bool upload_active = false;
 
 bool timechime_sound_init()
 {
@@ -59,6 +69,139 @@ void timechime_sound_remove(uint8_t sound_file_index)
 	sound_files[num_sound_files - 1][0] = '\0';
 	num_sound_files--;
 	timechime_settings_save_sound_files(sound_files, num_sound_files);
+}
+
+uint8_t timechime_sound_get_count()
+{
+	return num_sound_files;
+}
+
+// Formats supported by the VS1053 decoder, as FAT16 three character extensions.
+static bool sound_extension_is_supported(const char *extension)
+{
+	static const char *const extensions[] = {"mp3", "aac", "m4a", "mp4", "ogg",
+						 "oga", "wma", "mid", "fla", "wav"};
+	char lowered[4];
+
+	for (size_t i = 0; i < 3; i++) {
+		char c = extension[i];
+
+		lowered[i] = (c >= 'A' && c <= 'Z') ? (char)(c - 'A' + 'a') : c;
+	}
+	lowered[3] = '\0';
+
+	for (size_t i = 0; i < ARRAY_SIZE(extensions); i++) {
+		if (strcmp(lowered, extensions[i]) == 0) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+static bool sound_name_is_valid(const char *file_name)
+{
+	size_t len = strlen(file_name);
+	const char *dot = strchr(file_name, '.');
+
+	if (len == 0 || len > TIMECHIME_SOUND_NAME_MAX_LEN || dot == NULL) {
+		return false;
+	}
+
+	size_t base_len = (size_t)(dot - file_name);
+
+	if (base_len < 1 || base_len > 8 || strlen(dot + 1) != 3) {
+		return false;
+	}
+
+	// Restrict to a safe character set so the name cannot escape the sound directory.
+	for (size_t i = 0; i < len; i++) {
+		char c = file_name[i];
+
+		if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') ||
+		      c == '_' || c == '-')) {
+			if (i != base_len) {
+				return false;
+			}
+		}
+	}
+
+	return sound_extension_is_supported(dot + 1);
+}
+
+bool timechime_sound_upload_begin(const char *file_name)
+{
+	timechime_sound_upload_abort();
+
+	if (num_sound_files >= 255 || !sound_name_is_valid(file_name)) {
+		return false;
+	}
+
+	fs_mkdir(TIMECHIME_SOUND_DIR);
+	snprintf(upload_path, sizeof(upload_path), TIMECHIME_SOUND_DIR "/%s", file_name);
+
+	fs_file_t_init(&upload_file);
+	if (fs_open(&upload_file, upload_path, FS_O_CREATE | FS_O_WRITE) != 0) {
+		upload_path[0] = '\0';
+		return false;
+	}
+
+	fs_truncate(&upload_file, 0);
+	upload_active = true;
+
+	return true;
+}
+
+bool timechime_sound_upload_write(const uint8_t *data, size_t len)
+{
+	if (!upload_active) {
+		return false;
+	}
+
+	if (len == 0) {
+		return true;
+	}
+
+	return fs_write(&upload_file, data, len) == (ssize_t)len;
+}
+
+bool timechime_sound_upload_finish(uint8_t *sound_file_index)
+{
+	if (!upload_active) {
+		return false;
+	}
+
+	fs_close(&upload_file);
+	upload_active = false;
+
+	// Keep alarm index on sound re-upload.
+	for (uint8_t i = 0; i < num_sound_files; i++) {
+		if (strcmp(sound_files[i], upload_path) == 0) {
+			*sound_file_index = i;
+			return true;
+		}
+	}
+
+	if (num_sound_files >= 255) {
+		return false;
+	}
+
+	*sound_file_index = num_sound_files;
+	timechime_sound_add(upload_path);
+
+	return true;
+}
+
+void timechime_sound_upload_abort()
+{
+	if (!upload_active) {
+		return;
+	}
+
+	fs_close(&upload_file);
+	upload_active = false;
+	fs_unlink(upload_path);
+	upload_path[0] = '\0';
 }
 
 void timechime_sound_queue_set_volume(uint8_t left, uint8_t right)
