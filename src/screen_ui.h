@@ -22,7 +22,8 @@ typedef enum {
 	TIMECHIME_SPRITE_TRASH,
 	TIMECHIME_SPRITE_CONFIRM,
 	TIMECHIME_SPRITE_GPSSEARCH,
-	NUM_TIMECHIME_SPRITES
+	NUM_TIMECHIME_SPRITES,
+	TIMECHIME_SPRITE_NONE
 } timechime_sprite_t;
 
 // Initialize screen hardware and LVGL and confirm device is available.

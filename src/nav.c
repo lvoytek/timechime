@@ -17,8 +17,8 @@ enum timechime_nav_buttons {
 
 typedef enum {
 	TIMECHIME_NAV_STATE_SHOW_TIME,
+	TIMECHIME_NAV_STATE_NEXT_ALARM,
 	TIMECHIME_NAV_STATE_ALARM_LIST,
-	TIMECHIME_NAV_STATE_ALARM_EDIT,
 	NUM_TIMECHIME_NAV_STATES
 } timechime_nav_state_t;
 
@@ -71,6 +71,27 @@ void timechime_nav_go_to_state(timechime_nav_state_t state)
 	if (state < NUM_TIMECHIME_NAV_STATES) {
 		current_state = state;
 		needs_screen_update_val = true;
+	}
+}
+
+// Show time screen button mapping.
+static enum timechime_nav_show_time_buttons {
+	NAV_BUTTON_SHOW_TIME_ALARM_LIST = NAV_BUTTON_0,
+	NAV_BUTTON_SHOW_TIME_NEXT_ALARM = NAV_BUTTON_3,
+};
+
+// State update in show time screen.
+void nav_state_update_show_time(uint16_t button)
+{
+	switch (button) {
+	case NAV_BUTTON_SHOW_TIME_ALARM_LIST:
+		timechime_nav_go_to_state(TIMECHIME_NAV_STATE_ALARM_LIST);
+		break;
+	case NAV_BUTTON_SHOW_TIME_NEXT_ALARM:
+		timechime_nav_go_to_state(TIMECHIME_NAV_STATE_NEXT_ALARM);
+		break;
+	default:
+		break;
 	}
 }
 
@@ -132,7 +153,7 @@ void timechime_nav_update()
 	case TIMECHIME_NAV_STATE_ALARM_LIST:
 		nav_update_alarm_list();
 		break;
-	case TIMECHIME_NAV_STATE_ALARM_EDIT:
+	case TIMECHIME_NAV_STATE_NEXT_ALARM:
 		break;
 	default:
 		break;
@@ -158,6 +179,11 @@ void nav_update_show_time()
 	if (!initial_time_update_done && needs_screen_update()) {
 		timechime_screen_ui_clear();
 		timechime_screen_draw_gps_search();
+
+		timechime_screen_draw_button_indicator_set(
+			(timechime_sprite_t[]){TIMECHIME_SPRITE_GEAR, TIMECHIME_SPRITE_NONE,
+					       TIMECHIME_SPRITE_NONE, TIMECHIME_SPRITE_BELL});
+
 		timechime_screen_wait();
 	} else if (timechime_time_updated() || needs_screen_update()) {
 		initial_time_update_done = true;
@@ -166,6 +192,10 @@ void nav_update_show_time()
 		timechime_screen_draw_current_time(
 			timechime_time_get_current_hour(), timechime_time_get_current_minute(),
 			timechime_time_using_12hr_format(), timechime_time_current_time_is_pm());
+
+		timechime_screen_draw_button_indicator_set(
+			(timechime_sprite_t[]){TIMECHIME_SPRITE_GEAR, TIMECHIME_SPRITE_NONE,
+					       TIMECHIME_SPRITE_NONE, TIMECHIME_SPRITE_BELL});
 
 		timechime_screen_wait();
 		timechime_alarm_check_and_queue();
