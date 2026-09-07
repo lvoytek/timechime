@@ -100,7 +100,7 @@ void timechime_screen_draw_gps_search()
 	lv_obj_t *img = lv_image_create(lv_screen_active());
 	lv_image_set_src(img, sprites[TIMECHIME_SPRITE_GPSSEARCH]);
 	lv_obj_set_pos(img, (lv_display_get_horizontal_resolution(NULL) - img_w) / 2,
-		       (lv_display_get_vertical_resolution(NULL) - img_h) / 2);
+		       (lv_display_get_vertical_resolution(NULL) - img_h) / 2 - 25);
 }
 
 void timechime_screen_draw_button_indicator_outline()
