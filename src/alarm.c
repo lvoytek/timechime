@@ -85,3 +85,13 @@ void timechime_alarm_check_and_queue()
 		}
 	}
 }
+
+void timechime_alarm_toggle_enabled(uint8_t index)
+{
+	if (index >= num_alarms) {
+		return;
+	}
+
+	alarms[index].enabled = !alarms[index].enabled;
+	alarms_need_save = true;
+}

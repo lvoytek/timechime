@@ -34,4 +34,7 @@ bool timechime_alarm_delete(uint8_t index);
 // Check if alarm should be played and queue if so.
 void timechime_alarm_check_and_queue();
 
+// Toggle alarm to be enabled/disabled by index.
+void timechime_alarm_toggle_enabled(uint8_t index);
+
 #endif

@@ -112,6 +112,7 @@ void nav_state_update_alarm_list(uint16_t button)
 		}
 		break;
 	case NAV_BUTTON_ALARM_LIST_TOGGLE:
+		timechime_alarm_toggle_enabled(selected_alarm_index);
 		break;
 	default:
 		break;
