@@ -81,6 +81,13 @@
     .empty-row td { color: #aaa; text-align: center; }
 
     #tz-display { font-size: 0.88rem; color: #555; margin-top: 0.4rem; min-height: 1.2em; }
+
+    input[type="file"] { font-size: 0.85rem; }
+    #upload-progress { width: 100%; margin-top: 0.75rem; }
+    #upload-status { font-size: 0.85rem; color: #555; margin-top: 0.4rem; min-height: 1.2em; }
+    #upload-status.error { color: #c0392b; }
+    #upload-status.ok { color: #27ae60; }
+    .hint { font-size: 0.8rem; color: #888; margin-top: 0.5rem; }
   </style>
 </head>
 <body>
@@ -146,15 +153,45 @@
     </div>
   </section>
 
+  <!-- Sound upload -->
+  <section id="sound-section">
+    <h2>Upload Sound</h2>
+    <div class="row">
+      <input type="file" id="sound-file"
+             accept=".mp3,.aac,.m4a,.mp4,.ogg,.oga,.wma,.mid,.midi,.flac,.wav,audio/*">
+    </div>
+    <div class="row" style="margin-top:0.75rem">
+      <button id="sound-upload-btn" disabled>Upload</button>
+    </div>
+    <progress id="upload-progress" value="0" max="1" hidden></progress>
+    <div id="upload-status"></div>
+    <div class="hint">
+      MP3, AAC, Ogg Vorbis, WMA, MIDI, FLAC or WAV. File base name max 8 characters.
+    </div>
+  </section>
+
   <script>
   'use strict';
 
   /* ---- Protocol constants ---- */
-  const CMD = { GET_TIMEZONE: 0x01, SET_TIMEZONE: 0x02, GET_ALARMS: 0x03, ADD_ALARM: 0x04, DELETE_ALARM: 0x05 };
-  const RESP = { TIMEZONE: 0x01, ALARMS: 0x03, ACK: 0xFF, NAK: 0xFE };
+  const CMD = {
+    GET_TIMEZONE: 0x01, SET_TIMEZONE: 0x02, GET_ALARMS: 0x03, ADD_ALARM: 0x04, DELETE_ALARM: 0x05,
+    SOUND_UPLOAD_BEGIN: 0x06, SOUND_UPLOAD_DATA: 0x07, SOUND_UPLOAD_END: 0x08,
+    SOUND_UPLOAD_ABORT: 0x09,
+  };
+  const RESP = { TIMEZONE: 0x01, ALARMS: 0x03, SOUND_ADDED: 0x06, ACK: 0xFF, NAK: 0xFE };
 
   const VID = 0x1e2a;
   const PID = 0x000A;
+
+  const SOUND_BASE_MAX_LEN = 8;
+  // Shorten 4 char extensions to 3 for FAT16 support.
+  const SOUND_EXTENSIONS = {
+    mp3: 'mp3', aac: 'aac', m4a: 'm4a', mp4: 'mp4', ogg: 'ogg', oga: 'oga',
+    wma: 'wma', mid: 'mid', midi: 'mid', flac: 'fla', wav: 'wav',
+  };
+  const UPLOAD_CHUNK_MAX = 192;
+  const UPLOAD_SIZE_MAX = 8 * 1024 * 1024;
 
   /* ---- UI elements ---- */
   const connectBtn  = document.getElementById('connect-btn');
@@ -171,14 +208,19 @@
   const alarmEnab   = document.getElementById('alarm-enabled');
   const alarmGetBtn = document.getElementById('alarm-get-btn');
   const alarmAddBtn = document.getElementById('alarm-add-btn');
+  const soundFileIn = document.getElementById('sound-file');
+  const soundUpBtn  = document.getElementById('sound-upload-btn');
+  const uploadProg  = document.getElementById('upload-progress');
+  const uploadStat  = document.getElementById('upload-status');
 
   /* ---- Device state ---- */
   let device = null;
   let epOut = null;
   let epIn  = null;
+  let uploading = false;
 
   function setConnected(connected) {
-    [tzGetBtn, tzSetBtn, alarmGetBtn, alarmAddBtn].forEach(b => b.disabled = !connected);
+    [tzGetBtn, tzSetBtn, alarmGetBtn, alarmAddBtn, soundUpBtn].forEach(b => b.disabled = !connected);
     connectBtn.textContent = connected ? 'Disconnect' : 'Connect via WebUSB';
     statusEl.textContent   = connected ? 'Connected' : 'Not connected';
     statusEl.className     = connected ? 'connected' : '';
@@ -306,7 +348,7 @@
       if (resp[0] === RESP.ACK) {
         getAlarms();
       } else {
-        setStatus('Add alarm failed (NAK — device full?)', 'error');
+        setStatus('Add alarm failed (NAK)', 'error');
       }
     } catch (e) {
       setStatus('Add alarm failed: ' + e.message, 'error');
@@ -323,6 +365,91 @@
       }
     } catch (e) {
       setStatus('Delete alarm failed: ' + e.message, 'error');
+    }
+  }
+
+  /* ---- Sound upload ---- */
+  function sanitizeSoundName(fileName) {
+    const dot = fileName.lastIndexOf('.');
+    if (dot <= 0) return null;
+
+    const ext = SOUND_EXTENSIONS[fileName.slice(dot + 1).toLowerCase()];
+    if (!ext) return null;
+
+    let base = fileName.slice(0, dot).replace(/[^A-Za-z0-9_-]/g, '_').replace(/^[_-]+/, '');
+    if (base === '') base = 'sound';
+
+    return base.slice(0, SOUND_BASE_MAX_LEN) + '.' + ext;
+  }
+
+  function setUploadStatus(msg, cls = '') {
+    uploadStat.textContent = msg;
+    uploadStat.className = cls;
+  }
+
+  async function uploadSound() {
+    if (uploading) return;
+
+    const file = soundFileIn.files[0];
+    if (!file) {
+      setUploadStatus('Select an audio file.', 'error');
+      return;
+    }
+    if (file.size === 0) {
+      setUploadStatus('File is empty.', 'error');
+      return;
+    }
+    if (file.size > UPLOAD_SIZE_MAX) {
+      setUploadStatus('File too large.', 'error');
+      return;
+    }
+
+    const name = sanitizeSoundName(file.name);
+    if (!name) {
+      setUploadStatus('Unsupported file type.', 'error');
+      return;
+    }
+
+    uploading = true;
+    soundUpBtn.disabled = true;
+    uploadProg.hidden = false;
+    uploadProg.value = 0;
+    uploadProg.max = file.size;
+    setUploadStatus(`Uploading as "${name}"...`);
+
+    try {
+      const nameBytes = new TextEncoder().encode(name);
+      let resp = await sendRecv([CMD.SOUND_UPLOAD_BEGIN, nameBytes.length, ...nameBytes]);
+      if (resp[0] !== RESP.ACK) throw new Error('File name rejected');
+
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      for (let offset = 0; offset < bytes.length; ) {
+        let size = Math.min(UPLOAD_CHUNK_MAX, bytes.length - offset);
+        // Keep the transfer from ending on a full 64-byte packet so the device sees its end.
+        if ((size + 2) % 64 === 0) size -= 1;
+
+        const chunk = bytes.subarray(offset, offset + size);
+        resp = await sendRecv([CMD.SOUND_UPLOAD_DATA, size, ...chunk]);
+        if (resp[0] !== RESP.ACK) throw new Error(`Failed at byte ${offset}`);
+
+        offset += size;
+        uploadProg.value = offset;
+      }
+
+      resp = await sendRecv([CMD.SOUND_UPLOAD_END]);
+      if (resp[0] !== RESP.SOUND_ADDED) throw new Error('Failed to save sound');
+
+      alarmSound.value = resp[1];
+      setUploadStatus(`Saved "${name}" with ID ${resp[1]}.`, 'ok');
+    } catch (e) {
+      setUploadStatus('Upload failed: ' + e.message, 'error');
+      try {
+        await sendRecv([CMD.SOUND_UPLOAD_ABORT]);
+      } catch (_) {}
+    } finally {
+      uploading = false;
+      soundUpBtn.disabled = !device;
+      uploadProg.hidden = true;
     }
   }
 
@@ -352,6 +479,7 @@
   tzSetBtn.addEventListener('click', setTimezone);
   alarmGetBtn.addEventListener('click', getAlarms);
   alarmAddBtn.addEventListener('click', addAlarm);
+  soundUpBtn.addEventListener('click', uploadSound);
 
   navigator.usb.addEventListener('disconnect', e => {
     if (device && e.device === device) {
