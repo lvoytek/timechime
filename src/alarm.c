@@ -95,3 +95,37 @@ void timechime_alarm_toggle_enabled(uint8_t index)
 	alarms[index].enabled = !alarms[index].enabled;
 	alarms_need_save = true;
 }
+
+bool timechime_alarm_get_next(uint8_t current_hour, uint8_t current_minute,
+			      timechime_alarm_t *next_alarm)
+{
+	uint8_t next_index = 255;
+	for (uint8_t i = 0; i < num_alarms; i++) {
+		timechime_alarm_t *alarm = &alarms[i];
+		if (alarm->enabled) {
+			uint8_t hour_diff = (alarm->hour + 24 - current_hour) % 24;
+			uint8_t minute_diff = (alarm->minute + 60 - current_minute) % 60;
+
+			if (next_index == 255) {
+				next_index = i;
+			} else {
+				uint8_t next_hour_diff =
+					(alarms[next_index].hour + 24 - current_hour) % 24;
+				uint8_t next_minute_diff =
+					(alarms[next_index].minute + 60 - current_minute) % 60;
+				if (hour_diff < next_hour_diff ||
+				    (hour_diff == next_hour_diff &&
+				     minute_diff < next_minute_diff)) {
+					next_index = i;
+				}
+			}
+		}
+	}
+
+	if (next_index == 255) {
+		return false;
+	}
+
+	*next_alarm = alarms[next_index];
+	return true;
+}
