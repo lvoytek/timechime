@@ -70,7 +70,7 @@ void timechime_screen_draw_current_time(uint8_t hour, uint8_t minute, bool show_
 	lv_obj_set_style_pad_column(row, 4, 0);
 	lv_obj_set_flex_flow(row, LV_FLEX_FLOW_ROW);
 	lv_obj_set_flex_align(row, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_END, LV_FLEX_ALIGN_CENTER);
-	lv_obj_set_align(row, LV_ALIGN_CENTER);
+	lv_obj_align(row, LV_ALIGN_CENTER, 0, -lv_display_get_vertical_resolution(NULL) / 8);
 
 	char time_str[6];
 
