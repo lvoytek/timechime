@@ -254,3 +254,30 @@ void timechime_sound_update()
 		play_sound = false;
 	}
 }
+
+bool timechime_sound_get_name(uint8_t sound_file_index, size_t max_len, char *name)
+{
+	if (sound_file_index >= num_sound_files || name == NULL || max_len == 0) {
+		return false;
+	}
+
+	// Get file base name, removing the directory and extension.
+	const char *file_path = sound_files[sound_file_index];
+	const char *base_name = strrchr(file_path, '/');
+	if (base_name == NULL) {
+		base_name = file_path;
+	} else {
+		base_name++;
+	}
+
+	const char *dot = strrchr(base_name, '.');
+	size_t base_len = (dot != NULL) ? (size_t)(dot - base_name) : strlen(base_name);
+
+	if (base_len > max_len - 1) {
+		base_len = max_len - 1;
+	}
+
+	memcpy(name, base_name, base_len);
+	name[base_len] = '\0';
+	return true;
+}

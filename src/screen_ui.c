@@ -5,6 +5,7 @@
 #include <lvgl.h>
 #include <zephyr/kernel.h>
 
+#include "sound.h"
 #include "sprites.h"
 
 #include "screen_ui.h"
@@ -175,6 +176,12 @@ void timechime_screen_draw_alarm(uint8_t row, timechime_alarm_t *alarm, bool sel
 		return;
 	}
 
+	// Get alarm sound name
+	char sound_name[TIMECHIME_SOUND_NAME_MAX_LEN + 1];
+	if (!timechime_sound_get_name(alarm->sound_id, sizeof(sound_name), sound_name)) {
+		sound_name[0] = '\0';
+	}
+
 	// Create layer for this alarm.
 	lv_coord_t screen_w = lv_display_get_horizontal_resolution(NULL);
 	lv_coord_t screen_h = lv_display_get_vertical_resolution(NULL);
@@ -205,13 +212,10 @@ void timechime_screen_draw_alarm(uint8_t row, timechime_alarm_t *alarm, bool sel
 	lv_obj_set_align(time_label, LV_ALIGN_LEFT_MID);
 	lv_obj_set_style_text_font(time_label, &font_inter, 0);
 
-	char sound_id_str[4];
-	snprintf(sound_id_str, sizeof(sound_id_str), "%u", alarm->sound_id);
-
-	lv_obj_t *sound_id_label = lv_label_create(base_layer);
-	lv_label_set_text(sound_id_label, sound_id_str);
-	lv_obj_set_align(sound_id_label, LV_ALIGN_CENTER);
-	lv_obj_set_style_text_font(sound_id_label, &font_inter, 0);
+	lv_obj_t *sound_name_label = lv_label_create(base_layer);
+	lv_label_set_text(sound_name_label, sound_name);
+	lv_obj_set_align(sound_name_label, LV_ALIGN_CENTER);
+	lv_obj_set_style_text_font(sound_name_label, &font_inter_small, 0);
 
 	char enabled_str[4];
 	snprintf(enabled_str, sizeof(enabled_str), "%s", alarm->enabled ? "ON" : "OFF");

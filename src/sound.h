@@ -41,4 +41,7 @@ bool timechime_sound_upload_finish(uint8_t *sound_file_index);
 // Cancel in-progress upload and discard the file.
 void timechime_sound_upload_abort();
 
+// Get the name of a sound file by index.
+bool timechime_sound_get_name(uint8_t sound_file_index, size_t max_len, char *name);
+
 #endif
