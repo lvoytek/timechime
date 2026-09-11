@@ -288,9 +288,14 @@ void nav_update_next_alarm()
 // Repeated alarm list screen update.
 void nav_update_alarm_list()
 {
-	if (k_uptime_get_32() - last_state_change_time > 60000) {
+	uint32_t current_time = k_uptime_get_32();
+	// Go back to default screen after 1 minute of inactivity.
+	if (current_time - last_state_change_time > 60000) {
 		timechime_nav_go_to_state(TIMECHIME_NAV_STATE_SHOW_TIME);
-	} else if (needs_screen_update()) {
+	}
+
+	// Refresh screen after inputs + 1 second of inactivity.
+	else if (current_time - last_state_change_time > 1000 && needs_screen_update()) {
 		timechime_screen_ui_clear();
 
 		bool selected_alarm_enabled = false;
