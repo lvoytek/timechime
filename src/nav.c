@@ -54,7 +54,10 @@ void timechime_nav_update_state(uint16_t button)
 
 	switch (current_state) {
 	case TIMECHIME_NAV_STATE_SHOW_TIME:
-		timechime_nav_go_to_state(TIMECHIME_NAV_STATE_ALARM_LIST);
+		nav_state_update_show_time(button);
+		break;
+	case TIMECHIME_NAV_STATE_NEXT_ALARM:
+		nav_state_update_next_alarm(button);
 		break;
 	case TIMECHIME_NAV_STATE_ALARM_LIST:
 		nav_state_update_alarm_list(button);
@@ -89,6 +92,27 @@ void nav_state_update_show_time(uint16_t button)
 		break;
 	case NAV_BUTTON_SHOW_TIME_NEXT_ALARM:
 		timechime_nav_go_to_state(TIMECHIME_NAV_STATE_NEXT_ALARM);
+		break;
+	default:
+		break;
+	}
+}
+
+// Next alarm screen button mapping.
+static enum timechime_nav_next_alarm_buttons {
+	NAV_BUTTON_NEXT_ALARM_ALARM_LIST = NAV_BUTTON_0,
+	NAV_BUTTON_NEXT_ALARM_SHOW_TIME = NAV_BUTTON_3,
+};
+
+// State update in next alarm screen.
+void nav_state_update_next_alarm(uint16_t button)
+{
+	switch (button) {
+	case NAV_BUTTON_NEXT_ALARM_ALARM_LIST:
+		timechime_nav_go_to_state(TIMECHIME_NAV_STATE_ALARM_LIST);
+		break;
+	case NAV_BUTTON_NEXT_ALARM_SHOW_TIME:
+		timechime_nav_go_to_state(TIMECHIME_NAV_STATE_SHOW_TIME);
 		break;
 	default:
 		break;
@@ -154,6 +178,7 @@ void timechime_nav_update()
 		nav_update_alarm_list();
 		break;
 	case TIMECHIME_NAV_STATE_NEXT_ALARM:
+		nav_update_next_alarm();
 		break;
 	default:
 		break;
@@ -199,6 +224,64 @@ void nav_update_show_time()
 
 		timechime_screen_wait();
 		timechime_alarm_check_and_queue();
+	}
+}
+
+// Repeated next alarm screen update.
+static uint8_t last_next_alarm_index = TIMECHIME_MAX_ALARMS;
+
+void nav_update_next_alarm()
+{
+	if (!initial_time_update_done && needs_screen_update()) {
+		timechime_screen_ui_clear();
+		timechime_screen_draw_gps_search();
+
+		timechime_screen_draw_button_indicator_set(
+			(timechime_sprite_t[]){TIMECHIME_SPRITE_GEAR, TIMECHIME_SPRITE_NONE,
+					       TIMECHIME_SPRITE_NONE, TIMECHIME_SPRITE_TIME});
+
+		timechime_screen_wait();
+	}
+
+	bool next_alarm_updated = false;
+	bool needs_update = needs_screen_update();
+
+	if (needs_update || timechime_time_updated()) {
+		initial_time_update_done = true;
+
+		uint8_t next_alarm_index = timechime_alarm_get_next(
+			timechime_time_get_current_hour(), timechime_time_get_current_minute());
+
+		if (last_next_alarm_index != next_alarm_index) {
+			next_alarm_updated = true;
+			last_next_alarm_index = next_alarm_index;
+		}
+
+		timechime_alarm_check_and_queue();
+	}
+
+	// Do not refresh screen unless update needed or next alarm changed.
+	if (needs_update || next_alarm_updated) {
+		timechime_alarm_t *next_alarm;
+		if (timechime_alarm_get(last_next_alarm_index, &next_alarm)) {
+			timechime_screen_ui_clear();
+
+			if (timechime_time_using_12hr_format()) {
+				uint8_t hour = timechime_time_convert_to_12_hour(next_alarm->hour);
+				bool is_pm = next_alarm->hour >= 12;
+
+				timechime_screen_draw_next_alarm(hour, next_alarm->minute, true,
+								 is_pm);
+			} else {
+				timechime_screen_draw_next_alarm(next_alarm->hour,
+								 next_alarm->minute, false, false);
+			}
+
+			timechime_screen_draw_button_indicator_set((timechime_sprite_t[]){
+				TIMECHIME_SPRITE_GEAR, TIMECHIME_SPRITE_NONE, TIMECHIME_SPRITE_NONE,
+				TIMECHIME_SPRITE_TIME});
+			timechime_screen_wait();
+		}
 	}
 }
 

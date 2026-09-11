@@ -12,6 +12,7 @@
 static const lv_image_dsc_t *sprites[NUM_TIMECHIME_SPRITES];
 
 // Declare custom fonts
+LV_FONT_DECLARE(font_inter_small);
 LV_FONT_DECLARE(font_inter);
 LV_FONT_DECLARE(font_inter_large);
 
@@ -88,6 +89,16 @@ void timechime_screen_draw_current_time(uint8_t hour, uint8_t minute, bool show_
 		lv_label_set_text(am_pm_label, is_pm ? "PM" : "AM");
 		lv_obj_set_style_text_font(am_pm_label, &font_inter, 0);
 	}
+}
+
+void timechime_screen_draw_next_alarm(uint8_t hour, uint8_t minute, bool show_am_pm, bool is_pm)
+{
+	lv_obj_t *title_label = lv_label_create(lv_screen_active());
+	lv_label_set_text(title_label, "Next Alarm");
+	lv_obj_set_style_text_font(title_label, &font_inter_small, 0);
+	lv_obj_align(title_label, LV_ALIGN_TOP_MID, 0, 4);
+
+	timechime_screen_draw_current_time(hour, minute, show_am_pm, is_pm);
 }
 
 void timechime_screen_draw_gps_search()

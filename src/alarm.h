@@ -38,7 +38,6 @@ void timechime_alarm_check_and_queue();
 void timechime_alarm_toggle_enabled(uint8_t index);
 
 // Get the next alarm that will trigger after the current time.
-bool timechime_alarm_get_next(uint8_t current_hour, uint8_t current_minute,
-			      timechime_alarm_t *next_alarm);
+uint8_t timechime_alarm_get_next(uint8_t current_hour, uint8_t current_minute);
 
 #endif

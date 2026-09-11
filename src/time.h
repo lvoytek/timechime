@@ -7,6 +7,7 @@
 uint8_t timechime_time_get_current_hour();
 uint8_t timechime_time_get_current_minute();
 bool timechime_time_current_time_is_pm();
+uint8_t timechime_time_convert_to_12_hour(uint8_t hour);
 
 bool timechime_time_updated();
 void timechime_time_load_preferences();
