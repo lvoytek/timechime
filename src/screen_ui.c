@@ -39,6 +39,7 @@ bool timechime_screen_init()
 	sprites[TIMECHIME_SPRITE_TIME] = &sprite_time;
 	sprites[TIMECHIME_SPRITE_TRASH] = &sprite_trash;
 	sprites[TIMECHIME_SPRITE_CONFIRM] = &sprite_confirm;
+	sprites[TIMECHIME_SPRITE_BACK] = &sprite_back;
 	sprites[TIMECHIME_SPRITE_GPSSEARCH] = &sprite_gpssearch;
 
 	gpio_pin_configure_dt(&epaper_cs, GPIO_OUTPUT_INACTIVE);
