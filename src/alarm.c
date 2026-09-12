@@ -108,26 +108,27 @@ void timechime_alarm_set_sound(uint8_t index, uint8_t sound_id)
 
 uint8_t timechime_alarm_get_next(uint8_t current_hour, uint8_t current_minute)
 {
+	uint16_t current_total = current_hour * 60 + current_minute;
 	uint8_t next_index = TIMECHIME_MAX_ALARMS;
+	uint16_t next_diff = 0;
+
 	for (uint8_t i = 0; i < num_alarms; i++) {
 		timechime_alarm_t *alarm = &alarms[i];
-		if (alarm->enabled) {
-			uint8_t hour_diff = (alarm->hour + 24 - current_hour) % 24;
-			uint8_t minute_diff = (alarm->minute + 60 - current_minute) % 60;
+		if (!alarm->enabled) {
+			continue;
+		}
 
-			if (next_index == TIMECHIME_MAX_ALARMS) {
-				next_index = i;
-			} else {
-				uint8_t next_hour_diff =
-					(alarms[next_index].hour + 24 - current_hour) % 24;
-				uint8_t next_minute_diff =
-					(alarms[next_index].minute + 60 - current_minute) % 60;
-				if (hour_diff < next_hour_diff ||
-				    (hour_diff == next_hour_diff &&
-				     minute_diff < next_minute_diff)) {
-					next_index = i;
-				}
-			}
+		uint16_t alarm_total = alarm->hour * 60 + alarm->minute;
+		uint16_t diff = (alarm_total + 1440 - current_total) % 1440;
+
+		// Ignore alarm going off now
+		if (diff == 0) {
+			diff = 1440;
+		}
+
+		if (next_index == TIMECHIME_MAX_ALARMS || diff < next_diff) {
+			next_index = i;
+			next_diff = diff;
 		}
 	}
 
