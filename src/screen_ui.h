@@ -7,7 +7,7 @@
 #include "alarm.h"
 
 #define TIMECHIME_SCREEN_UI_MAX_ALARMS 3
-#define TIMECHIME_SCREEN_UI_MAX_SOUNDS 5
+#define TIMECHIME_SCREEN_UI_MAX_SOUNDS 6
 
 // The set of available sprites to display.
 typedef enum {
@@ -54,6 +54,9 @@ void timechime_screen_draw_button_indicator_set(timechime_sprite_t sprites[4]);
 
 // Draw alarm data in a specific row.
 void timechime_screen_draw_alarm(uint8_t row, timechime_alarm_t *alarm, bool selected);
+
+// Draw sound data in a specific row.
+void timechime_screen_draw_sound(uint8_t row, uint8_t sound_index, bool selected);
 
 // Returns true while the screen is actively using the SPI bus.
 bool timechime_screen_is_busy();

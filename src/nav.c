@@ -132,6 +132,7 @@ static enum timechime_nav_alarm_list_buttons {
 };
 
 static volatile uint8_t selected_alarm_index = 0;
+static volatile uint8_t selected_sound_index = 0;
 
 // State update in alarm list screen.
 void nav_state_update_alarm_list(uint16_t button)
@@ -145,6 +146,7 @@ void nav_state_update_alarm_list(uint16_t button)
 
 	switch (button) {
 	case NAV_BUTTON_ALARM_LIST_EDIT_SOUND:
+		selected_sound_index = 0;
 		timechime_nav_go_to_state(TIMECHIME_NAV_STATE_EDIT_SOUND);
 		break;
 	case NAV_BUTTON_ALARM_LIST_UP:
@@ -178,8 +180,6 @@ static enum timechime_nav_edit_sound_buttons {
 	NAV_BUTTON_EDIT_SOUND_BACK = NAV_BUTTON_2,
 	NAV_BUTTON_EDIT_SOUND_SELECT = NAV_BUTTON_3,
 };
-
-static volatile uint8_t selected_sound_index = 0;
 
 // State update in sound selection screen.
 void nav_state_update_edit_sound(uint16_t button)
@@ -403,6 +403,8 @@ void nav_update_edit_sound()
 		for (uint8_t i = 0; i < TIMECHIME_SCREEN_UI_MAX_SOUNDS; i++) {
 			uint8_t sound_index = start_index + i;
 			if (sound_index < sound_count) {
+				timechime_screen_draw_sound(i, sound_index,
+							    sound_index == selected_sound_index);
 			}
 		}
 
