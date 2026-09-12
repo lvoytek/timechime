@@ -74,6 +74,11 @@ uint8_t timechime_time_get_current_hour()
 	return current_hour;
 }
 
+uint8_t timechime_time_get_current_hour_24()
+{
+	return current_hour;
+}
+
 uint8_t timechime_time_get_current_minute()
 {
 	return current_minute;
