@@ -11,11 +11,13 @@
  *   0x07 <n> <data...> SOUND_UPLOAD_DATA  (uint8 chunk length, then chunk bytes)
  *   0x08               SOUND_UPLOAD_END   (no payload)
  *   0x09               SOUND_UPLOAD_ABORT (no payload)
+ *   0x0A <i>           GET_SOUND     (uint8 index)
  *
  * Device -> Host responses:
  *   0x01 <h> <m>           TIMEZONE  (int8 hours, int8 minutes)
  *   0x03 <n> [h m s e]...  ALARMS    (count, then 4 bytes per alarm)
  *   0x06 <i>               SOUND_ADDED (uint8 sound index)
+ *   0x0A <n> <l> <name...> SOUND     (total count, name length, then name bytes)
  *   0xFF                   ACK
  *   0xFE                   NAK
  */
@@ -48,10 +50,12 @@ LOG_MODULE_REGISTER(timechime_usb, LOG_LEVEL_INF);
 #define CMD_SOUND_UPLOAD_DATA  0x07
 #define CMD_SOUND_UPLOAD_END   0x08
 #define CMD_SOUND_UPLOAD_ABORT 0x09
+#define CMD_GET_SOUND          0x0A
 
 #define RESP_TIMEZONE    0x01
 #define RESP_ALARMS      0x03
 #define RESP_SOUND_ADDED 0x06
+#define RESP_SOUND       0x0A
 #define RESP_ACK         0xFF
 #define RESP_NAK         0xFE
 
@@ -246,6 +250,28 @@ static size_t tcusb_build_response(const uint8_t *cmd, size_t cmd_len, uint8_t *
 		timechime_sound_upload_abort();
 		resp[0] = RESP_ACK;
 		return 1;
+	}
+	case CMD_GET_SOUND: {
+		char name[TIMECHIME_SOUND_NAME_MAX_LEN + 1];
+
+		if (cmd_len < 2 || resp_max < 3) {
+			resp[0] = RESP_NAK;
+			return 1;
+		}
+
+		resp[0] = RESP_SOUND;
+		resp[1] = timechime_sound_get_count();
+
+		if (!timechime_sound_get_name(cmd[1], sizeof(name), name)) {
+			resp[2] = 0;
+			return 3;
+		}
+
+		size_t name_len = MIN(strlen(name), resp_max - 3U);
+
+		resp[2] = (uint8_t)name_len;
+		memcpy(&resp[3], name, name_len);
+		return 3 + name_len;
 	}
 	default:
 		resp[0] = RESP_NAK;
