@@ -107,8 +107,15 @@
 
   <!-- Timezone -->
   <section id="tz-section">
-    <h2>Timezone</h2>
+    <h2>Time</h2>
     <div id="tz-display">—</div>
+    <div class="row" style="margin-top:0.75rem">
+      <label>Format</label>
+      <select id="time-format" disabled>
+        <option value="0">24-hour</option>
+        <option value="1">12-hour</option>
+      </select>
+    </div>
     <div class="row" style="margin-top:0.75rem">
       <label>Hours</label>
       <input type="number" id="tz-hours" min="-12" max="14" value="0">
@@ -186,10 +193,11 @@
   const CMD = {
     GET_TIMEZONE: 0x01, SET_TIMEZONE: 0x02, GET_ALARMS: 0x03, ADD_ALARM: 0x04, DELETE_ALARM: 0x05,
     SOUND_UPLOAD_BEGIN: 0x06, SOUND_UPLOAD_DATA: 0x07, SOUND_UPLOAD_END: 0x08,
-    SOUND_UPLOAD_ABORT: 0x09, GET_SOUND: 0x0A,
+    SOUND_UPLOAD_ABORT: 0x09, GET_SOUND: 0x0A, GET_TIME_FORMAT: 0x0B, SET_TIME_FORMAT: 0x0C,
   };
   const RESP = {
-    TIMEZONE: 0x01, ALARMS: 0x03, SOUND_ADDED: 0x06, SOUND: 0x0A, ACK: 0xFF, NAK: 0xFE,
+    TIMEZONE: 0x01, ALARMS: 0x03, SOUND_ADDED: 0x06, SOUND: 0x0A, TIME_FORMAT: 0x0B,
+    ACK: 0xFF, NAK: 0xFE,
   };
 
   const VID = 0x1e2a;
@@ -212,6 +220,7 @@
   const tzMinutesIn = document.getElementById('tz-minutes');
   const tzGetBtn    = document.getElementById('tz-get-btn');
   const tzSetBtn    = document.getElementById('tz-set-btn');
+  const timeFmtSel  = document.getElementById('time-format');
   const alarmTbody  = document.getElementById('alarm-tbody');
   const alarmHour   = document.getElementById('alarm-hour');
   const alarmMin    = document.getElementById('alarm-minute');
@@ -232,7 +241,8 @@
   let soundNames = [];
 
   function setConnected(connected) {
-    [tzGetBtn, tzSetBtn, alarmGetBtn, alarmAddBtn, soundUpBtn].forEach(b => b.disabled = !connected);
+    [tzGetBtn, tzSetBtn, alarmGetBtn, alarmAddBtn, soundUpBtn, timeFmtSel]
+      .forEach(b => b.disabled = !connected);
     connectBtn.textContent = connected ? 'Disconnect' : 'Connect via WebUSB';
     statusEl.textContent   = connected ? 'Connected' : 'Not connected';
     statusEl.className     = connected ? 'connected' : '';
@@ -261,6 +271,7 @@
 
       setConnected(true);
       getTimezone();
+      getTimeFormat();
       await getSounds();
       getAlarms();
     } catch (e) {
@@ -329,6 +340,26 @@
       }
     } catch (e) {
       setStatus('Set timezone failed: ' + e.message, 'error');
+    }
+  }
+
+  async function getTimeFormat() {
+    try {
+      const resp = await sendRecv([CMD.GET_TIME_FORMAT]);
+      if (resp[0] !== RESP.TIME_FORMAT) throw new Error('Unexpected response');
+      timeFmtSel.value = resp[1] ? '1' : '0';
+    } catch (e) {
+      setStatus('Time format read failed: ' + e.message, 'error');
+    }
+  }
+
+  async function setTimeFormat() {
+    try {
+      const resp = await sendRecv([CMD.SET_TIME_FORMAT, timeFmtSel.value === '1' ? 1 : 0]);
+      if (resp[0] !== RESP.ACK) throw new Error('NAK');
+    } catch (e) {
+      setStatus('Set time format failed: ' + e.message, 'error');
+      getTimeFormat();
     }
   }
 
@@ -543,6 +574,7 @@
   connectBtn.addEventListener('click', () => device ? disconnect() : connect());
   tzGetBtn.addEventListener('click', getTimezone);
   tzSetBtn.addEventListener('click', setTimezone);
+  timeFmtSel.addEventListener('change', setTimeFormat);
   alarmGetBtn.addEventListener('click', getAlarms);
   alarmAddBtn.addEventListener('click', addAlarm);
   soundUpBtn.addEventListener('click', uploadSound);
