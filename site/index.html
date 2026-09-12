@@ -40,6 +40,15 @@
       font-size: 0.9rem;
     }
 
+    select {
+      min-width: 10rem;
+      padding: 0.3rem 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      background: #fff;
+    }
+
     button {
       padding: 0.4rem 0.9rem;
       border: none;
@@ -139,8 +148,8 @@
         <input type="number" id="alarm-minute" min="0" max="59" value="0">
       </div>
       <div class="row">
-        <label>Sound ID</label>
-        <input type="number" id="alarm-sound" min="0" max="255" value="0">
+        <label>Sound</label>
+        <select id="alarm-sound"></select>
       </div>
       <div class="row">
         <label>Enabled</label>
@@ -177,9 +186,11 @@
   const CMD = {
     GET_TIMEZONE: 0x01, SET_TIMEZONE: 0x02, GET_ALARMS: 0x03, ADD_ALARM: 0x04, DELETE_ALARM: 0x05,
     SOUND_UPLOAD_BEGIN: 0x06, SOUND_UPLOAD_DATA: 0x07, SOUND_UPLOAD_END: 0x08,
-    SOUND_UPLOAD_ABORT: 0x09,
+    SOUND_UPLOAD_ABORT: 0x09, GET_SOUND: 0x0A,
   };
-  const RESP = { TIMEZONE: 0x01, ALARMS: 0x03, SOUND_ADDED: 0x06, ACK: 0xFF, NAK: 0xFE };
+  const RESP = {
+    TIMEZONE: 0x01, ALARMS: 0x03, SOUND_ADDED: 0x06, SOUND: 0x0A, ACK: 0xFF, NAK: 0xFE,
+  };
 
   const VID = 0x1e2a;
   const PID = 0x000A;
@@ -218,6 +229,7 @@
   let epOut = null;
   let epIn  = null;
   let uploading = false;
+  let soundNames = [];
 
   function setConnected(connected) {
     [tzGetBtn, tzSetBtn, alarmGetBtn, alarmAddBtn, soundUpBtn].forEach(b => b.disabled = !connected);
@@ -249,6 +261,7 @@
 
       setConnected(true);
       getTimezone();
+      await getSounds();
       getAlarms();
     } catch (e) {
       setStatus('Connection failed: ' + e.message, 'error');
@@ -263,6 +276,8 @@
       epOut = null;
       epIn  = null;
     }
+    soundNames = [];
+    renderSounds();
     setConnected(false);
   }
 
@@ -341,8 +356,12 @@
   async function addAlarm() {
     const hour    = Math.max(0, Math.min(23,  parseInt(alarmHour.value)  || 0));
     const minute  = Math.max(0, Math.min(59,  parseInt(alarmMin.value)   || 0));
-    const soundId = Math.max(0, Math.min(255, parseInt(alarmSound.value) || 0));
+    const soundId = parseInt(alarmSound.value);
     const enabled = alarmEnab.checked ? 1 : 0;
+    if (!Number.isInteger(soundId)) {
+      setStatus('Upload a sound before adding an alarm', 'error');
+      return;
+    }
     try {
       const resp = await sendRecv([CMD.ADD_ALARM, hour, minute, soundId, enabled]);
       if (resp[0] === RESP.ACK) {
@@ -366,6 +385,27 @@
     } catch (e) {
       setStatus('Delete alarm failed: ' + e.message, 'error');
     }
+  }
+
+  /* ---- Sounds ---- */
+  async function getSounds() {
+    try {
+      const names = [];
+      const decoder = new TextDecoder();
+      let count = 1;
+      for (let i = 0; i < count; i++) {
+        const resp = await sendRecv([CMD.GET_SOUND, i]);
+        if (resp[0] !== RESP.SOUND) throw new Error('Unexpected response');
+        count = resp[1];
+        if (i >= count) break;
+        names.push(decoder.decode(resp.subarray(3, 3 + resp[2])) || `Sound ${i}`);
+      }
+      soundNames = names;
+    } catch (e) {
+      soundNames = [];
+      setStatus('Sound list read failed: ' + e.message, 'error');
+    }
+    renderSounds();
   }
 
   /* ---- Sound upload ---- */
@@ -439,8 +479,10 @@
       resp = await sendRecv([CMD.SOUND_UPLOAD_END]);
       if (resp[0] !== RESP.SOUND_ADDED) throw new Error('Failed to save sound');
 
-      alarmSound.value = resp[1];
-      setUploadStatus(`Saved "${name}" with ID ${resp[1]}.`, 'ok');
+      const soundId = resp[1];
+      await getSounds();
+      alarmSound.value = soundId;
+      setUploadStatus(`Saved "${name}" with ID ${soundId}.`, 'ok');
     } catch (e) {
       setUploadStatus('Upload failed: ' + e.message, 'error');
       try {
@@ -454,6 +496,29 @@
   }
 
   /* ---- Rendering ---- */
+  function renderSounds() {
+    const previous = alarmSound.value;
+
+    alarmSound.innerHTML = '';
+    if (soundNames.length === 0) {
+      const opt = document.createElement('option');
+      opt.textContent = 'No sounds uploaded';
+      opt.value = '';
+      alarmSound.appendChild(opt);
+      alarmSound.disabled = true;
+      return;
+    }
+
+    soundNames.forEach((name, i) => {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = name;
+      alarmSound.appendChild(opt);
+    });
+    alarmSound.disabled = false;
+    alarmSound.value = previous !== '' && Number(previous) < soundNames.length ? previous : 0;
+  }
+
   function renderAlarms(alarms) {
     alarmTbody.innerHTML = '';
     if (alarms.length === 0) {
@@ -465,9 +530,10 @@
       tr.innerHTML = `
         <td>${i + 1}</td>
         <td>${String(a.hour).padStart(2,'0')}:${String(a.minute).padStart(2,'0')}</td>
-        <td>${a.soundId}</td>
+        <td></td>
         <td>${a.enabled ? 'Yes' : 'No'}</td>
         <td><button class="alarm-delete">Delete</button></td>`;
+      tr.children[2].textContent = soundNames[a.soundId] ?? `Sound ${a.soundId}`;
       tr.querySelector('.alarm-delete').onclick = () => deleteAlarm(i);
       alarmTbody.appendChild(tr);
     });
@@ -481,9 +547,13 @@
   alarmAddBtn.addEventListener('click', addAlarm);
   soundUpBtn.addEventListener('click', uploadSound);
 
+  renderSounds();
+
   navigator.usb.addEventListener('disconnect', e => {
     if (device && e.device === device) {
       device = null;
+      soundNames = [];
+      renderSounds();
       setConnected(false);
       setStatus('Device disconnected', 'error');
     }
