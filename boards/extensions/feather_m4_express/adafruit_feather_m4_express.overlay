@@ -3,6 +3,7 @@
  * Map Arduino R3 + arduino_spi for screen compatibility.
  * Map additional GPIOs for navigation buttons.
  * Map Uart for GPS using gnss.
+ * Map ADC GPIO to potentiometer for volume.
  *
  *   Arduino R3 | Feather pin | SAMD21 GPIO | Shield signal
  *   -----------+-------------+-------------+--------------
@@ -13,8 +14,10 @@
  *   D10        | A4          | PA04        | E-paper CS
  *   MOSI       | D24         | PB23        | sercom1 MOSI
  *   SCK        | D25         | PA17        | sercom1 SCK
+ *   ADC0[6]    | A5          | PA06        | Poteniometer ADC
  */
 
+#include <zephyr/dt-bindings/adc/adc.h>
 #include <zephyr/dt-bindings/gpio/arduino-header-r3.h>
 #include <zephyr/dt-bindings/i2c/i2c.h>
 #include <zephyr/dt-bindings/input/input-event-codes.h>
@@ -26,6 +29,10 @@
 		sw1 = &button1;
 		sw2 = &button2;
 		sw3 = &button3;
+	};
+
+	zephyr,user {
+		io-channels = <&adc0 6>;
 	};
 
 	epaper_cs_gpio: epaper-cs-gpio {
@@ -101,6 +108,31 @@
 
 	gnss: gnss-nmea-generic {
 		compatible = "gnss-nmea-generic";
+	};
+};
+
+&pinctrl {
+	adc0_default: adc0_default {
+		group1 {
+			pinmux = <PA6B_ADC0_AIN6>;
+		};
+	};
+};
+
+&adc0 {
+	status = "okay";
+	pinctrl-0 = <&adc0_default>;
+	pinctrl-names = "default";
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	channel@6 {
+		reg = <6>;
+		zephyr,gain = "ADC_GAIN_1";
+		zephyr,reference = "ADC_REF_INTERNAL";
+		zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+		zephyr,resolution = <12>;
+		zephyr,input-positive = <6>;
 	};
 };
 
