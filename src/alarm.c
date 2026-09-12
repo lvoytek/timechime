@@ -71,7 +71,7 @@ bool timechime_alarm_delete(uint8_t index)
 
 void timechime_alarm_check_and_queue()
 {
-	uint8_t current_hour = timechime_time_get_current_hour();
+	uint8_t current_hour = timechime_time_get_current_hour_24();
 	uint8_t current_minute = timechime_time_get_current_minute();
 
 	for (uint8_t i = 0; i < num_alarms; i++) {

@@ -307,7 +307,7 @@ void nav_update_next_alarm()
 		initial_time_update_done = true;
 
 		uint8_t next_alarm_index = timechime_alarm_get_next(
-			timechime_time_get_current_hour(), timechime_time_get_current_minute());
+			timechime_time_get_current_hour_24(), timechime_time_get_current_minute());
 
 		if (last_next_alarm_index != next_alarm_index) {
 			next_alarm_updated = true;
