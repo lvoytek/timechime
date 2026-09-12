@@ -37,6 +37,9 @@ void timechime_alarm_check_and_queue();
 // Toggle alarm to be enabled/disabled by index.
 void timechime_alarm_toggle_enabled(uint8_t index);
 
+// Set the sound for the alarm at the specified index.
+void timechime_alarm_set_sound(uint8_t index, uint8_t sound_id);
+
 // Get the next alarm that will trigger after the current time.
 uint8_t timechime_alarm_get_next(uint8_t current_hour, uint8_t current_minute);
 

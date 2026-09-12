@@ -96,6 +96,16 @@ void timechime_alarm_toggle_enabled(uint8_t index)
 	alarms_need_save = true;
 }
 
+void timechime_alarm_set_sound(uint8_t index, uint8_t sound_id)
+{
+	if (index >= num_alarms) {
+		return;
+	}
+
+	alarms[index].sound_id = sound_id;
+	alarms_need_save = true;
+}
+
 uint8_t timechime_alarm_get_next(uint8_t current_hour, uint8_t current_minute)
 {
 	uint8_t next_index = TIMECHIME_MAX_ALARMS;
