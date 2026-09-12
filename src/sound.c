@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "pot.h"
 #include "screen_ui.h"
 #include "sound.h"
 
@@ -238,10 +239,24 @@ void timechime_sound_play()
 	}
 }
 
+// Translate pot value to VS1053 volume.
+static uint8_t sound_volume_from_pot()
+{
+	uint8_t level = timechime_pot_get_value();
+
+	return (uint8_t)(0xFE - ((uint16_t)level * 0xFE) / UINT8_MAX);
+}
+
 void timechime_sound_update()
 {
 	if (timechime_screen_is_busy()) {
 		return;
+	}
+
+	if (play_sound) {
+		uint8_t attenuation = sound_volume_from_pot();
+
+		timechime_sound_queue_set_volume(attenuation, attenuation);
 	}
 
 	if (update_volume && device_is_ready(dev)) {

@@ -4,6 +4,7 @@
 
 #include "alarm.h"
 #include "nav.h"
+#include "pot.h"
 #include "sound.h"
 #include "time.h"
 #include "usb.h"
@@ -23,10 +24,9 @@ int main(void)
 	timechime_usb_init();
 	timechime_nav_init();
 	timechime_alarm_init();
+	timechime_pot_init();
 	timechime_sound_init();
 	timechime_time_load_preferences();
-
-	timechime_sound_queue_set_volume(0x00, 0x00);
 
 	while (1) {
 		timechime_nav_update();
