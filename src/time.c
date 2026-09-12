@@ -117,3 +117,9 @@ bool timechime_time_using_12hr_format()
 {
 	return timezone_format_12hr;
 }
+
+void timechime_time_set_12hr_format(bool use_12hr_format)
+{
+	timezone_format_12hr = use_12hr_format;
+	timechime_settings_save_use_12hr_format(use_12hr_format);
+}

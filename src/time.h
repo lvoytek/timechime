@@ -15,5 +15,6 @@ void timechime_time_get_timezone_offset(int8_t *hours, int8_t *minutes);
 void timechime_time_set_timezone_offset(int8_t hours, int8_t minutes);
 
 bool timechime_time_using_12hr_format();
+void timechime_time_set_12hr_format(bool use_12hr_format);
 
 #endif
