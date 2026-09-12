@@ -19,6 +19,7 @@ typedef enum {
 	TIMECHIME_NAV_STATE_SHOW_TIME,
 	TIMECHIME_NAV_STATE_NEXT_ALARM,
 	TIMECHIME_NAV_STATE_ALARM_LIST,
+	TIMECHIME_NAV_STATE_EDIT_SOUND,
 	NUM_TIMECHIME_NAV_STATES
 } timechime_nav_state_t;
 
@@ -61,6 +62,9 @@ void timechime_nav_update_state(uint16_t button)
 		break;
 	case TIMECHIME_NAV_STATE_ALARM_LIST:
 		nav_state_update_alarm_list(button);
+		break;
+	case TIMECHIME_NAV_STATE_EDIT_SOUND:
+		nav_state_update_edit_sound(button);
 		break;
 	default:
 		timechime_nav_go_to_state(TIMECHIME_NAV_STATE_SHOW_TIME);
@@ -141,6 +145,7 @@ void nav_state_update_alarm_list(uint16_t button)
 
 	switch (button) {
 	case NAV_BUTTON_ALARM_LIST_EDIT_SOUND:
+		timechime_nav_go_to_state(TIMECHIME_NAV_STATE_EDIT_SOUND);
 		break;
 	case NAV_BUTTON_ALARM_LIST_UP:
 		if (selected_alarm_index > 0) {
@@ -166,6 +171,55 @@ void nav_state_update_alarm_list(uint16_t button)
 	needs_screen_update_val = true;
 }
 
+// Sound selection screen button mapping.
+static enum timechime_nav_edit_sound_buttons {
+	NAV_BUTTON_EDIT_SOUND_UP = NAV_BUTTON_0,
+	NAV_BUTTON_EDIT_SOUND_DOWN = NAV_BUTTON_1,
+	NAV_BUTTON_EDIT_SOUND_BACK = NAV_BUTTON_2,
+	NAV_BUTTON_EDIT_SOUND_SELECT = NAV_BUTTON_3,
+};
+
+static volatile uint8_t selected_sound_index = 0;
+
+// State update in sound selection screen.
+void nav_state_update_edit_sound(uint16_t button)
+{
+	uint8_t sound_count = timechime_sound_get_count();
+
+	// Ignore buttons other than back when there are no sounds
+	if (sound_count == 0 && button != NAV_BUTTON_EDIT_SOUND_BACK) {
+		return;
+	}
+
+	switch (button) {
+	case NAV_BUTTON_EDIT_SOUND_BACK:
+		timechime_nav_go_to_state(TIMECHIME_NAV_STATE_ALARM_LIST);
+		break;
+	case NAV_BUTTON_EDIT_SOUND_UP:
+		if (selected_sound_index > 0) {
+			selected_sound_index--;
+		} else {
+			selected_sound_index = sound_count - 1;
+		}
+		break;
+	case NAV_BUTTON_EDIT_SOUND_DOWN:
+		if (selected_sound_index + 1 < sound_count) {
+			selected_sound_index++;
+		} else {
+			selected_sound_index = 0;
+		}
+		break;
+	case NAV_BUTTON_EDIT_SOUND_SELECT:
+		timechime_alarm_set_sound(selected_alarm_index, selected_sound_index);
+		timechime_nav_go_to_state(TIMECHIME_NAV_STATE_ALARM_LIST);
+		break;
+	default:
+		break;
+	}
+
+	needs_screen_update_val = true;
+}
+
 // ----- Looped nav screen updates -----
 
 void timechime_nav_update()
@@ -179,6 +233,9 @@ void timechime_nav_update()
 		break;
 	case TIMECHIME_NAV_STATE_NEXT_ALARM:
 		nav_update_next_alarm();
+		break;
+	case TIMECHIME_NAV_STATE_EDIT_SOUND:
+		nav_update_edit_sound();
 		break;
 	default:
 		break;
@@ -322,6 +379,36 @@ void nav_update_alarm_list()
 			TIMECHIME_SPRITE_SOUND_SELECT,
 			selected_alarm_enabled ? TIMECHIME_SPRITE_TOGGLE_ON
 					       : TIMECHIME_SPRITE_TOGGLE_OFF});
+
+		timechime_screen_wait();
+	}
+}
+
+// Repeated sound selection screen update.
+void nav_update_edit_sound()
+{
+	uint32_t current_time = k_uptime_get_32();
+	// Go back to default screen after 1 minute of inactivity.
+	if (current_time - last_state_change_time > 60000) {
+		timechime_nav_go_to_state(TIMECHIME_NAV_STATE_SHOW_TIME);
+	}
+
+	// Refresh screen after inputs + 1 second of inactivity.
+	else if (current_time - last_state_change_time > 1000 && needs_screen_update()) {
+		timechime_screen_ui_clear();
+
+		uint8_t sound_count = timechime_sound_get_count();
+		uint8_t sound_index_mod = selected_sound_index % TIMECHIME_SCREEN_UI_MAX_SOUNDS;
+		uint8_t start_index = selected_sound_index - sound_index_mod;
+		for (uint8_t i = 0; i < TIMECHIME_SCREEN_UI_MAX_SOUNDS; i++) {
+			uint8_t sound_index = start_index + i;
+			if (sound_index < sound_count) {
+			}
+		}
+
+		timechime_screen_draw_button_indicator_set((timechime_sprite_t[]){
+			TIMECHIME_SPRITE_ARROW_UP, TIMECHIME_SPRITE_ARROW_DOWN,
+			TIMECHIME_SPRITE_BACK, TIMECHIME_SPRITE_CONFIRM});
 
 		timechime_screen_wait();
 	}

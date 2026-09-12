@@ -7,6 +7,7 @@
 #include "alarm.h"
 
 #define TIMECHIME_SCREEN_UI_MAX_ALARMS 3
+#define TIMECHIME_SCREEN_UI_MAX_SOUNDS 5
 
 // The set of available sprites to display.
 typedef enum {
