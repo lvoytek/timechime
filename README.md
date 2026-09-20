@@ -1,3 +1,5 @@
+![TimeChime](img/timechime.jpg)
+
 # TimeChime
 Daily alarm clock system with e-Paper display.
 
