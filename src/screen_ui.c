@@ -284,9 +284,16 @@ static void on_refr_finish(lv_event_t *e)
 
 void timechime_screen_wait(void)
 {
+	// Avoid registering refresh callback multiple times.
+	static bool refr_cb_registered;
+
+	if (!refr_cb_registered) {
+		lv_display_add_event_cb(lv_display_get_default(), on_refr_finish,
+					LV_EVENT_FLUSH_FINISH, NULL);
+		refr_cb_registered = true;
+	}
+
 	screen_refresh_done = false;
-	lv_display_add_event_cb(lv_display_get_default(), on_refr_finish, LV_EVENT_FLUSH_FINISH,
-				NULL);
 
 	while (!screen_refresh_done) {
 		screen_busy = true;
